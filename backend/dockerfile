@@ -1,0 +1,8 @@
+FROM tensorflow/tensorflow:2.12.0
+
+RUN pip install fastapi
+RUN pip install uvicorn
+RUN pip install psycopg2-binary
+RUN pip install sqlmodel
+
+WORKDIR /app
