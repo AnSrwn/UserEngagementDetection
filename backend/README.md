@@ -4,8 +4,16 @@ This Backend is based on [FastAPI](https://fastapi.tiangolo.com/), PostgreSQL wi
 
 ## Setup
 
-1. Run `cp example.env .env`
-2. Run `docker-compose up -d`
+Get environment variables:
+```bash
+cp example.env .env
+```
+
+Build and start containers:
+
+```bash
+docker-compose up -d
+```
 
 FastAPI: http://localhost:8000/   
 FastAPI Docs: http://127.0.0.1:8000/docs   
