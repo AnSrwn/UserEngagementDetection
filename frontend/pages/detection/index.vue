@@ -20,7 +20,17 @@ function createPeerConnection() {
         sdpSemantics: 'unified-plan'
     };
 
-    config.iceServers = [{ urls: ['stun:stun.l.google.com:19302'] }];
+    // config.iceServers = [{ urls: ['stun:stun.l.google.com:19302'] }];
+    // config.iceServers = [{
+    //     urls: ['turn:localhost:3478'],
+    //     username: 'test',
+    //     credential: 'test123'
+    // }];
+    config.iceServers = [{
+        urls: ['turn:a.relay.metered.ca:80'],
+        username: '6e1209436b4e7050772c1c01',
+        credential: 'XXyU9+35T0piBKe1'
+    }];
 
     peerConnection = new RTCPeerConnection(config);
 
@@ -43,13 +53,12 @@ function createPeerConnection() {
     }, false);
     signalingState.textContent = peerConnection.signalingState;
 
-    // connect audio / video
-    // pc.addEventListener('track', function(evt) {
-    //     if (evt.track.kind == 'video')
-    //         document.getElementById('video').srcObject = evt.streams[0];
-    //     else
-    //         document.getElementById('audio').srcObject = evt.streams[0];
-    // });
+    // connect video
+    const videoElement = document.querySelector('video#localVideo');
+    peerConnection.addEventListener('track', function(evt) {
+        if (evt.track.kind == 'video')
+            videoElement.srcObject = evt.streams[0];
+    });
 
     return peerConnection;
 }
@@ -108,8 +117,8 @@ async function start() {
             peerConnection.addTrack(track, stream);
         })
 
-        const videoElement = document.querySelector('video#localVideo');
-        videoElement.srcObject = stream;
+        // const videoElement = document.querySelector('video#localVideo');
+        // videoElement.srcObject = stream;
 
         await negotiate();
         console.log(peerConnection)

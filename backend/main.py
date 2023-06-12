@@ -14,9 +14,6 @@ from aiortc import MediaStreamTrack, RTCPeerConnection, RTCSessionDescription
 from aiortc.contrib.media import MediaBlackhole, MediaPlayer, MediaRecorder, MediaRelay
 from pydantic import BaseModel
 
-logger = logging.getLogger("pc")
-pcs = set()
-
 app = FastAPI(title="UserEngagementDetection")
 
 
@@ -42,11 +39,15 @@ app.include_router(test.router)
 async def root():
     return {"message": "UserEngagementDetection API is working."}
 
+# WebRTC
+logger = logging.getLogger("pc")
+pcs = set()
+relay = MediaRelay()
+
 class OfferRequest(BaseModel):
     sdp: str
     type: str
 
-# WebRTC
 @app.post("/offer")
 async def offer(request: OfferRequest):
     logger.info(request)
@@ -70,19 +71,13 @@ async def offer(request: OfferRequest):
     def on_track(track):
         log_info("Track %s received", track.kind)
 
-        # if track.kind == "video":
-            # pc.addTrack(
-            #     VideoTransformTrack(
-            #         relay.subscribe(track), transform=params["video_transform"]
-            #     )
-            # )
-            # if args.record_to:
-            #     recorder.addTrack(relay.subscribe(track))
+        if track.kind == "video":
+            # return same video
+            pc.addTrack(track)
 
         @track.on("ended")
         async def on_ended():
             log_info("Track %s ended", track.kind)
-            # await recorder.stop()
 
     # handle offer
     await pc.setRemoteDescription(offer)
