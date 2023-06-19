@@ -22,15 +22,26 @@ function createPeerConnection() {
 
     // config.iceServers = [{ urls: ['stun:stun.l.google.com:19302'] }];
     // config.iceServers = [{
-    //     urls: ['turn:localhost:3478'],
+    //     urls: ['turn:a.relay.metered.ca:80'],
+    //     username: '6e1209436b4e7050772c1c01',
+    //     credential: 'XXyU9+35T0piBKe1'
+    // }];
+    // config.iceServers = [{
+    //     urls: ['turn:coturn.andreas-sauerwein.com'],
     //     username: 'test',
     //     credential: 'test123'
     // }];
-    config.iceServers = [{
-        urls: ['turn:a.relay.metered.ca:80'],
-        username: '6e1209436b4e7050772c1c01',
-        credential: 'XXyU9+35T0piBKe1'
-    }];
+
+    // config.iceServers = [
+    //     {
+    //         urls: ['stun:coturn.andreas-sauerwein.com'],
+    //     },
+    //     {
+    //         urls: ['turn:coturn.andreas-sauerwein.com'],
+    //         username: 'test',
+    //         credential: 'test123'
+    //     }
+    // ];
 
     peerConnection = new RTCPeerConnection(config);
 
@@ -55,7 +66,7 @@ function createPeerConnection() {
 
     // connect video
     const videoElement = document.querySelector('video#localVideo');
-    peerConnection.addEventListener('track', function(evt) {
+    peerConnection.addEventListener('track', function (evt) {
         if (evt.track.kind == 'video')
             videoElement.srcObject = evt.streams[0];
     });
@@ -64,30 +75,24 @@ function createPeerConnection() {
 }
 
 async function negotiate() {
-    const offer = await peerConnection.createOffer()
-    await peerConnection.setLocalDescription(offer)
+    const localDescription = await peerConnection.createOffer()
+    await peerConnection.setLocalDescription(localDescription)
+    console.info("LocalDescription set")
 
+    // wait for ICE gathering to complete
+    await iceGatheringCompleted()
+
+    const offer = peerConnection.localDescription;
+
+    console.info("Offer:")
+    console.info(offer)
     const offerSdp = document.getElementById('offerSdp');
     offerSdp.textContent = offer.sdp;
 
-    // wait for ICE gathering to complete
-    // await new Promise(function (resolve) {
-    //     if (pc.iceGatheringState === 'complete') {
-    //         resolve();
-    //     } else {
-    //         function checkState() {
-    //             if (pc.iceGatheringState === 'complete') {
-    //                 pc.removeEventListener('icegatheringstatechange', checkState);
-    //                 resolve();
-    //             }
-    //         }
-    //         pc.addEventListener('icegatheringstatechange', checkState);
-    //     }
-    // })
-
+    console.info("Send offer")
     let response = await $fetch('offer', {
         method: 'POST',
-        baseURL: 'http://localhost:8000',
+        baseURL: 'http://127.0.0.1:8000',
         body: offer,
         headers: {
             'Content-Type': 'application/json'
@@ -96,9 +101,27 @@ async function negotiate() {
         alert(error);
     })
 
+    console.info("Received Answer:")
+    console.info(response)
     const answerSdp = document.getElementById('answerSdp');
     answerSdp.textContent = response.sdp;
     peerConnection.setRemoteDescription(response);
+}
+
+async function iceGatheringCompleted() {
+    return new Promise(function (resolve) {
+        if (peerConnection.iceGatheringState === 'complete') {
+            resolve();
+        } else {
+            function checkState() {
+                if (peerConnection.iceGatheringState === 'complete') {
+                    peerConnection.removeEventListener('icegatheringstatechange', checkState);
+                    resolve();
+                }
+            }
+            peerConnection.addEventListener('icegatheringstatechange', checkState);
+        }
+    });
 }
 
 async function start() {
@@ -117,11 +140,8 @@ async function start() {
             peerConnection.addTrack(track, stream);
         })
 
-        // const videoElement = document.querySelector('video#localVideo');
-        // videoElement.srcObject = stream;
-
         await negotiate();
-        console.log(peerConnection)
+        console.info(peerConnection)
     } catch (error) {
         console.error('Error opening video camera.', error);
     }
