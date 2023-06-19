@@ -4,6 +4,14 @@ RUN pip install fastapi
 RUN pip install uvicorn
 RUN pip install psycopg2-binary
 RUN pip install sqlmodel
+
+# WebRTC library for Python
 RUN pip install aiortc
+
+# KI
+# RUN apt-get update && apt-get install libgl1
+# RUN pip install opencv-python
+RUN pip install opencv-python-headless
+RUN pip install dlib
 
 WORKDIR /app
