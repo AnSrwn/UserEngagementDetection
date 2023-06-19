@@ -19,6 +19,27 @@ pnpm install
 
 ## Development Server
 
+### Setup SSL
+Install mkcert. Installation instructions can be found here: https://github.com/FiloSottile/mkcert   
+Create certificates by running the following command in the frontend folder:   
+```bash
+mkcert localhost
+```
+Update `nuxt.config.ts`:
+```bash
+devServer: {
+    https: {
+      key: 'localhost-key.pem',
+      cert: 'localhost.pem'
+    }
+  },
+```
+Use the following environment variable:
+```bash
+NODE_TLS_REJECT_UNAUTHORIZED=0
+```
+
+### Start Dev Server
 Start the development server on `http://localhost:3000`
 
 ```bash

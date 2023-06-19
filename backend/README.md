@@ -9,7 +9,18 @@ Get environment variables:
 cp example.env .env
 ```
 
-Build and start containers:
+### Setup SSL
+Install mkcert. Installation instructions can be found here: https://github.com/FiloSottile/mkcert   
+Create certificates by running the following command in the frontend folder:   
+```bash
+mkcert localhost
+```
+Update `docker-compose.yml`:
+```bash
+command: uvicorn main:app --host 0.0.0.0 --port 8000 --ssl-keyfile localhost-key.pem --ssl-certfile localhost.pem --reload
+```
+
+### Build and start containers:
 
 ```bash
 docker-compose up -d

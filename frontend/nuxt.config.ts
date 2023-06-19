@@ -2,6 +2,12 @@ import { resolve } from "path";
 
 export default defineNuxtConfig({
   devtools: { enabled: true },
+  devServer: {
+    https: {
+      key: 'localhost-key.pem',
+      cert: 'localhost.pem'
+    }
+  },
   alias: {
     '@': resolve(__dirname, '/'),
     assets: "/<rootDir>/assets",
