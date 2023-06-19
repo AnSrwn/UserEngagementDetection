@@ -21,17 +21,6 @@ function createPeerConnection() {
     };
 
     // config.iceServers = [{ urls: ['stun:stun.l.google.com:19302'] }];
-    // config.iceServers = [{
-    //     urls: ['turn:a.relay.metered.ca:80'],
-    //     username: '6e1209436b4e7050772c1c01',
-    //     credential: 'XXyU9+35T0piBKe1'
-    // }];
-    // config.iceServers = [{
-    //     urls: ['turn:coturn.andreas-sauerwein.com'],
-    //     username: 'test',
-    //     credential: 'test123'
-    // }];
-
     // config.iceServers = [
     //     {
     //         urls: ['stun:coturn.andreas-sauerwein.com'],
