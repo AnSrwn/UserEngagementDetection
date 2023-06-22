@@ -1,11 +1,14 @@
+import asyncio
 import logging
+import time
 import uuid
 import keras
 import cv2
 import dlib
 import numpy
+import concurrent.futures
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, BackgroundTasks
 from fastapi.logger import logger
 from fastapi.middleware.cors import CORSMiddleware
 from database.models import Test
@@ -108,13 +111,15 @@ async def offer(request: OfferRequest):
 class VideoTransformTrack(MediaStreamTrack):
 
     kind = "video"
+    # background_tasks = BackgroundTasks()
+    # loop = asyncio.get_event_loop()
+    # background_tasks = None
 
     def __init__(self, track):
         super().__init__()  # don't forget this!
         self.track = track
 
-    async def recv(self):
-        frame = await self.track.recv()
+    async def detectEngagement(self, frame):
         image = frame.to_ndarray(format="bgr24")
 
         try:
@@ -152,5 +157,19 @@ class VideoTransformTrack(MediaStreamTrack):
             log.error(f"No predictions: {e}")
         except Exception as e:
             log.error(e)
-        
+
+    async def long_process(self):
+        await asyncio.sleep(10)
+        log.info("has been processed.")
+
+    async def recv(self):
+        frame = await self.track.recv()
+        # asyncio.ensure_future(self.long_process())
+        # asyncio.ensure_future(self.detectEngagement(frame))
+        # asyncio.run(self.long_process())
+        # with concurrent.futures.ProcessPoolExecutor() as executor:
+        #     executor.submit(self.long_process)
+        # asyncio.create_task(self.long_process())
+        asyncio.create_task(self.detectEngagement(frame))
+        asyncio.sleep(0) # suspend to start task
         return frame
