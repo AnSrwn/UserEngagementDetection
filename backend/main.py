@@ -6,7 +6,6 @@ import keras
 import cv2
 import dlib
 import numpy
-import concurrent.futures
 
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.logger import logger
@@ -40,12 +39,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# use heartbeat to test efficiency of background tasks
+async def heartbeat():
+    while True:
+        start = time.time()
+        await asyncio.sleep(1)
+        delay = time.time() - start - 1
+        log.info(f'heartbeat delay = {delay:.3f}s')
+
+
 #We use a callback to trigger the creation of the table if they don't exist yet
 #When the API is starting
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
-
+    # use heartbeat to test efficiency of background tasks
+    asyncio.create_task(heartbeat())
 
 app.include_router(test.router)
 
@@ -112,16 +121,28 @@ async def offer(request: OfferRequest):
 class VideoTransformTrack(MediaStreamTrack):
 
     kind = "video"
-    frame_counter = 0
     pc_id = None
-    # background_tasks = BackgroundTasks()
-    # loop = asyncio.get_event_loop()
-    # background_tasks = None
+    frame_counter = 0
+    queue = None
+    workers = None
+
+    async def worker(self):
+        while True:
+            coro = await self.queue.get()
+            await coro  # consider using try/except
+            self.queue.task_done()
+
+    async def start_queue(self):
+        self.queue.get_nowait()
+    
 
     def __init__(self, track, pc_id):
         super().__init__()  # don't forget this!
         self.track = track
         self.pc_id = pc_id
+        self.queue = asyncio.Queue(maxsize=1)
+        self.workers = [asyncio.create_task(self.worker()) for _ in range(1)]
+        self.start_queue()
 
     async def detectEngagement(self, frame):
         image = frame.to_ndarray(format="bgr24")
@@ -162,24 +183,12 @@ class VideoTransformTrack(MediaStreamTrack):
         except Exception as e:
             log.error(e)
 
-    async def long_process(self):
-        await asyncio.sleep(10)
-        log.info("has been processed.")
-
     async def recv(self):
         frame = await self.track.recv()
         self.frame_counter += 1
 
         if (self.frame_counter == 20):
             self.frame_counter = 0
-            asyncio.create_task(self.detectEngagement(frame))
-            await asyncio.sleep(0) # suspend to start task
-
-        # asyncio.ensure_future(self.long_process())
-        # asyncio.ensure_future(self.detectEngagement(frame))
-        # asyncio.run(self.long_process())
-        # with concurrent.futures.ProcessPoolExecutor() as executor:
-        #     executor.submit(self.long_process)
-        # asyncio.create_task(self.long_process())
+            await self.queue.put(self.detectEngagement(frame))
         
         return frame
