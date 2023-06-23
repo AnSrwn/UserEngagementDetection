@@ -88,7 +88,8 @@ async def offer(request: OfferRequest):
         if track.kind == "video":
             # return same video
             pc.addTrack(VideoTransformTrack(
-                relay.subscribe(track)
+                relay.subscribe(track),
+                pc_id
             ))
 
         @track.on("ended")
@@ -111,13 +112,16 @@ async def offer(request: OfferRequest):
 class VideoTransformTrack(MediaStreamTrack):
 
     kind = "video"
+    frame_counter = 0
+    pc_id = None
     # background_tasks = BackgroundTasks()
     # loop = asyncio.get_event_loop()
     # background_tasks = None
 
-    def __init__(self, track):
+    def __init__(self, track, pc_id):
         super().__init__()  # don't forget this!
         self.track = track
+        self.pc_id = pc_id
 
     async def detectEngagement(self, frame):
         image = frame.to_ndarray(format="bgr24")
@@ -150,7 +154,7 @@ class VideoTransformTrack(MediaStreamTrack):
                     confusion = round(predictions[2][0][1],3)
                     frustration = round(predictions[3][0][1],3)
 
-                    log.info(f"Boredem: {boredom} | Engagement: {engagement} | Confusion: {confusion} | Frustration: {frustration}")
+                    log.info(f"{self.pc_id}: Boredem: {boredom} | Engagement: {engagement} | Confusion: {confusion} | Frustration: {frustration}")
 
         except UnboundLocalError as e:
             # if no predictions
@@ -164,12 +168,18 @@ class VideoTransformTrack(MediaStreamTrack):
 
     async def recv(self):
         frame = await self.track.recv()
+        self.frame_counter += 1
+
+        if (self.frame_counter == 20):
+            self.frame_counter = 0
+            asyncio.create_task(self.detectEngagement(frame))
+            await asyncio.sleep(0) # suspend to start task
+
         # asyncio.ensure_future(self.long_process())
         # asyncio.ensure_future(self.detectEngagement(frame))
         # asyncio.run(self.long_process())
         # with concurrent.futures.ProcessPoolExecutor() as executor:
         #     executor.submit(self.long_process)
         # asyncio.create_task(self.long_process())
-        asyncio.create_task(self.detectEngagement(frame))
-        asyncio.sleep(0) # suspend to start task
+        
         return frame
