@@ -13,7 +13,9 @@ from multiprocessing import Process
 
 log = logging.getLogger("uvicorn.debug")
 
-engagementModel = keras.models.load_model("processing/models/parallel_model.h5", compile=False)
+engagementModel = keras.models.load_model(
+    "processing/models/parallel_model.h5", compile=False
+)
 log.info("Engagement Model loaded")
 
 
@@ -52,7 +54,13 @@ class VideoTransformTrack(MediaStreamTrack):
             self.frame_counter = 0
             # await self.queue.put(self.detectEngagement(frame))
             try:
-                process = Process(target=detectEngagement, args=(serialized,))
+                process = Process(
+                    target=detectEngagement,
+                    args=(
+                        serialized,
+                        self.pc_id,
+                    ),
+                )
                 process.start()
                 log.info(f"{process.name}, isAlive: {process.is_alive()}")
             except Exception as e:
@@ -61,7 +69,7 @@ class VideoTransformTrack(MediaStreamTrack):
         return frame
 
 
-def detectEngagement(serialized):
+def detectEngagement(serialized, pc_id):
     try:
         image = msgpack.unpackb(serialized, object_hook=m.decode)
         detector = dlib.get_frontal_face_detector()
@@ -99,7 +107,7 @@ def detectEngagement(serialized):
                 frustration = round(predictions[3][0][1], 3)
 
                 log.info(
-                    f"test: Boredem: {boredom} | Engagement: {engagement} | Confusion: {confusion} | Frustration: {frustration}"
+                    f"{pc_id}: Boredem: {boredom} | Engagement: {engagement} | Confusion: {confusion} | Frustration: {frustration}"
                 )
 
     except UnboundLocalError as e:
