@@ -119,13 +119,19 @@ async function start() {
     peerConnection = createPeerConnection();
 
     try {
-        const constraints = { 'video': true, 'audio': false };
-        // video: {
-        // width: {min: 640, ideal: 1280, max: 1920},
-        // height: {min: 480, ideal: 720, max: 1080}
-        // }
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        stream.getTracks().forEach(function (track) {
+        // TODO: think of the best framerate
+        const videoConstraints = {
+            video: {
+                frameRate: {
+                    exact: 20
+                },
+                // width: {min: 640, ideal: 1280, max: 1920},
+                // height: {min: 480, ideal: 720, max: 1080}
+            }
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
+        stream.getVideoTracks().forEach(function (track) {
             peerConnection.addTrack(track, stream);
         })
 
