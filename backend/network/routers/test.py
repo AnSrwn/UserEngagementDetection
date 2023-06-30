@@ -1,21 +1,19 @@
 from typing import List
+from database.database import create_sqlmodel_engine
+from database.database_service import DatabaseService
 from database.models import Test
-from database.database import engine
 from fastapi import APIRouter
-from sqlmodel import Session
 
 router = APIRouter()
 
-@router.post("/test/", response_model=Test)
-async def add_test(test: Test):
-    with Session(engine) as session:
-        session.add(test)
-        session.commit()
-        session.refresh(test)
+with DatabaseService() as db_service:
+    @router.post("/test/", response_model=Test)
+    async def add_test(test: Test):
+        db_service.test.add(test)
+        db_service.commit()
         return test
-    
-@router.get("/test/", response_model=List[Test])
-async def get_test():
-    with Session(engine) as session:
-        return session.query(Test).all()
-    
+
+
+    @router.get("/test/", response_model=List[Test])
+    async def get_test():
+        return db_service.test.list()

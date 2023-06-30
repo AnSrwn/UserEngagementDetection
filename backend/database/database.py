@@ -1,11 +1,16 @@
 import logging
-from sqlmodel import SQLModel, create_engine
+from typing import Callable
+from sqlmodel import create_engine
 from config.config import settings
+from sqlmodel import Session
+from sqlmodel.pool import StaticPool
 
-log = logging.getLogger('uvicorn.debug')
+log = logging.getLogger("uvicorn.debug")
 
-engine = create_engine(settings.db_url)
 
-def create_db_and_tables():
-    SQLModel.metadata.create_all(engine)
-    log.info("Database created")
+def create_sqlmodel_engine():
+    return create_engine(settings.db_url, poolclass=StaticPool)
+
+
+def sqlmodel_session_maker(engine) -> Callable[[], Session]:
+    return lambda: Session(bind=engine, autocommit=False, autoflush=False)

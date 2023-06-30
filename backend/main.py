@@ -1,13 +1,13 @@
 import asyncio
-from asyncore import loop
 import logging
+from database.models import Test
+from database.database_service import DatabaseService
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from network.routers import test
 from network.routers import webrtc
-from database.database import create_db_and_tables
 from common.heartbeat import heartbeat
 
 log = logging.getLogger("uvicorn.debug")
@@ -30,7 +30,8 @@ app.add_middleware(
 # When the API is starting
 @app.on_event("startup")
 def on_startup():
-    create_db_and_tables()
+    with DatabaseService() as db_service:
+        db_service.create_db_and_tables()
     # use heartbeat to test efficiency of multi-processing
     asyncio.create_task(heartbeat())
 
