@@ -19,7 +19,7 @@ relay = MediaRelay()
 processExcecutor = concurrent.futures.ProcessPoolExecutor()
 
 
-@router.post("/offer")
+@router.post("/offer", response_model=RTCSessionDescription)
 async def offer(request: OfferRequest):
     """This endpoint is used to establish a WebRTC connection."""
     log.info(request)
