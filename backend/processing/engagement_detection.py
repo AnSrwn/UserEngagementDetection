@@ -5,10 +5,10 @@ import dlib
 import numpy
 import logging
 import keras
+import concurrent.futures
 
 from aiortc import MediaStreamTrack
 from numpy import mat as Matrix
-from multiprocessing import Process
 
 
 log = logging.getLogger("uvicorn.debug")
@@ -22,10 +22,11 @@ log.info("Engagement Model loaded")
 # A video stream track that transforms frames from an another track.
 class VideoTransformTrack(MediaStreamTrack):
     kind = "video"
-    pc_id = None
+    pc_id: str = None
     frame_counter = 0
-    queue = None
-    workers = None
+    # queue = None
+    # workers = None
+    processExcecutor = None
 
     async def worker(self):
         while True:
@@ -36,10 +37,16 @@ class VideoTransformTrack(MediaStreamTrack):
     async def start_queue(self):
         self.queue.get_nowait()
 
-    def __init__(self, track, pc_id):
+    def __init__(
+        self,
+        track,
+        pc_id: str,
+        processExcecutor: concurrent.futures.ProcessPoolExecutor,
+    ):
         super().__init__()  # don't forget this!
         self.track = track
         self.pc_id = pc_id
+        self.processExcecutor = processExcecutor
         # self.queue = asyncio.Queue(maxsize=1)
         # self.workers = [asyncio.create_task(self.worker()) for _ in range(1)]
         # self.start_queue()
@@ -54,22 +61,17 @@ class VideoTransformTrack(MediaStreamTrack):
             self.frame_counter = 0
             # await self.queue.put(self.detectEngagement(frame))
             try:
-                process = Process(
-                    target=detectEngagement,
-                    args=(
-                        serialized,
-                        self.pc_id,
-                    ),
+                # TODO: Maybe use Tasks or Threads to optimize synchronous flow
+                process = self.processExcecutor.submit(
+                    detectEngagement, serialized, self.pc_id
                 )
-                process.start()
-                log.info(f"{process.name}, isAlive: {process.is_alive()}")
             except Exception as e:
                 log.error(f"recv: {e}")
 
         return frame
 
 
-def detectEngagement(serialized, pc_id):
+def detectEngagement(serialized, pc_id: str):
     try:
         image = msgpack.unpackb(serialized, object_hook=m.decode)
         detector = dlib.get_frontal_face_detector()
@@ -87,8 +89,7 @@ def detectEngagement(serialized, pc_id):
                 len(image[y1:y2, x1:x2]) <= 0
                 or len(image[y1 - 100 : y2 + 100, x1 - 100 : x2 + 100]) <= 0
             ):
-                log.info("No face detected")
-                return
+                return "No face detected"
             # append faces
             roi.append(
                 cv2.resize(
@@ -106,12 +107,13 @@ def detectEngagement(serialized, pc_id):
                 confusion = round(predictions[2][0][1], 3)
                 frustration = round(predictions[3][0][1], 3)
 
-                log.info(
-                    f"{pc_id}: Boredem: {boredom} | Engagement: {engagement} | Confusion: {confusion} | Frustration: {frustration}"
-                )
+                return f"{pc_id}: Boredem: {boredom} | Engagement: {engagement} | Confusion: {confusion} | Frustration: {frustration}"
+            else:
+                return "No face detected"
 
     except UnboundLocalError as e:
-        # if no predictions
-        log.error(f"No predictions: {e}")
+        return f"No predictions: {e}"
     except Exception as e:
-        log.error(f"detectEngagement: {e}")
+        return f"detectEngagement: {e}"
+
+    return None

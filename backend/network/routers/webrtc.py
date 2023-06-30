@@ -1,5 +1,6 @@
 import logging
 import uuid
+import concurrent.futures
 
 from fastapi import APIRouter
 from aiortc import RTCPeerConnection, RTCSessionDescription
@@ -14,6 +15,8 @@ router = APIRouter()
 
 peerConnections = set()
 relay = MediaRelay()
+
+processExcecutor = concurrent.futures.ProcessPoolExecutor()
 
 
 @router.post("/offer")
@@ -43,7 +46,9 @@ async def offer(request: OfferRequest):
 
         if track.kind == "video":
             # return same video
-            pc.addTrack(VideoTransformTrack(relay.subscribe(track), pc_id))
+            pc.addTrack(
+                VideoTransformTrack(relay.subscribe(track), pc_id, processExcecutor)
+            )
 
         @track.on("ended")
         async def on_ended():
