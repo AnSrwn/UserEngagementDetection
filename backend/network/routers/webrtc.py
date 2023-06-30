@@ -26,7 +26,7 @@ async def offer(request: OfferRequest):
     offer = RTCSessionDescription(sdp=request.sdp, type=request.type)
 
     pc = RTCPeerConnection()
-    pc_id = f"pc_{uuid.uuid1}"
+    pc_id = f"pc_{uuid.uuid1()}"
     peerConnections.add(pc)
 
     def log_info(msg, *args):
