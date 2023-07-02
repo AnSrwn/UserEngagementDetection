@@ -1,13 +1,12 @@
 import asyncio
 import logging
-from database.models import Test
-from database.database_service import DatabaseService
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from database.database_service import DatabaseService
 from network.routers import test
 from network.routers import webrtc
+from network.routers import engagement
 from common.heartbeat import heartbeat
 
 log = logging.getLogger("uvicorn.debug")
@@ -38,6 +37,7 @@ def on_startup():
 
 app.include_router(test.router)
 app.include_router(webrtc.router)
+app.include_router(engagement.router)
 
 
 @app.get("/")

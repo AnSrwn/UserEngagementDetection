@@ -1,9 +1,10 @@
-from typing import Optional
+from typing import List, Optional
 from database.models import Engagement
 from database.repositories.base_repositories import GenericSqlRepository
 from database.repositories.engagement.engagement_repository import (
     EngagementRepositoryBase,
 )
+from datetime import datetime
 from sqlmodel import Session, select
 
 
@@ -11,6 +12,12 @@ class EngagementRepository(GenericSqlRepository[Engagement], EngagementRepositor
     def __init__(self, session: Session) -> None:
         super().__init__(session, Engagement)
 
-    def get_by_peer_connection(self, peer_connection: str) -> Optional[Engagement]:
-        query = select(Engagement).where(Engagement.peer_connection == peer_connection)
-        return self._session.exec(query).first()
+    def list_by_datetime(
+        self, from_datetime: Optional[datetime], to_datetime: Optional[datetime]
+    ) -> List[Engagement]:
+        enteties = select(self._model_cls)
+        if from_datetime != None:
+            enteties = enteties.where(self._model_cls.time > from_datetime)
+        if to_datetime != None:
+            enteties = enteties.where(self._model_cls.time < to_datetime)
+        return self._session.exec(enteties).all()
