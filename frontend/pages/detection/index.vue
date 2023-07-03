@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from "vue";
 
 // TODO: Selection of camera
 // TODO: Handling change of camera
@@ -7,205 +7,219 @@ import { ref, onMounted } from 'vue'
 // TODO: Stop on page change
 
 // WebRTC
-const dataChannel = ref(null)
+const dataChannel = ref(null);
 
 // peer connection
 var peerConnection = null;
 
 // data channel
-var dc = null, dcInterval = null;
+var dc = null,
+  dcInterval = null;
 
 function createPeerConnection() {
-    var config = {
-        sdpSemantics: 'unified-plan'
-    };
+  var config = {
+    sdpSemantics: "unified-plan",
+  };
 
-    // config.iceServers = [{ urls: ['stun:stun.l.google.com:19302'] }];
-    // config.iceServers = [
-    //     {
-    //         urls: ['stun:coturn.andreas-sauerwein.com'],
-    //     },
-    //     {
-    //         urls: ['turn:coturn.andreas-sauerwein.com'],
-    //         username: 'test',
-    //         credential: 'test123'
-    //     }
-    // ];
+  // config.iceServers = [{ urls: ['stun:stun.l.google.com:19302'] }];
+  // config.iceServers = [
+  //     {
+  //         urls: ['stun:coturn.andreas-sauerwein.com'],
+  //     },
+  //     {
+  //         urls: ['turn:coturn.andreas-sauerwein.com'],
+  //         username: 'test',
+  //         credential: 'test123'
+  //     }
+  // ];
 
-    peerConnection = new RTCPeerConnection(config);
+  peerConnection = new RTCPeerConnection(config);
 
-    // register some listeners to help debugging
-    const iceGatheringState = document.getElementById('iceGatheringState');
-    peerConnection.addEventListener('icegatheringstatechange', function () {
-        iceGatheringState.textContent += ' -> ' + peerConnection.iceGatheringState;
-    }, false);
-    iceGatheringState.textContent = peerConnection.iceGatheringState;
+  // register some listeners to help debugging
+  const iceGatheringState = document.getElementById("iceGatheringState");
+  peerConnection.addEventListener(
+    "icegatheringstatechange",
+    function () {
+      iceGatheringState.textContent +=
+        " -> " + peerConnection.iceGatheringState;
+    },
+    false
+  );
+  iceGatheringState.textContent = peerConnection.iceGatheringState;
 
-    const iceConnectionState = document.getElementById('iceConnectionState');
-    peerConnection.addEventListener('iceconnectionstatechange', function () {
-        iceConnectionState.textContent += ' -> ' + peerConnection.iceConnectionState;
-    }, false);
-    iceConnectionState.textContent = peerConnection.iceConnectionState;
+  const iceConnectionState = document.getElementById("iceConnectionState");
+  peerConnection.addEventListener(
+    "iceconnectionstatechange",
+    function () {
+      iceConnectionState.textContent +=
+        " -> " + peerConnection.iceConnectionState;
+    },
+    false
+  );
+  iceConnectionState.textContent = peerConnection.iceConnectionState;
 
-    const signalingState = document.getElementById('signalingState');
-    peerConnection.addEventListener('signalingstatechange', function () {
-        signalingState.textContent += ' -> ' + peerConnection.signalingState;
-    }, false);
-    signalingState.textContent = peerConnection.signalingState;
+  const signalingState = document.getElementById("signalingState");
+  peerConnection.addEventListener(
+    "signalingstatechange",
+    function () {
+      signalingState.textContent += " -> " + peerConnection.signalingState;
+    },
+    false
+  );
+  signalingState.textContent = peerConnection.signalingState;
 
-    // connect video
-    const videoElement = document.querySelector('video#localVideo');
-    peerConnection.addEventListener('track', function (evt) {
-        if (evt.track.kind == 'video')
-            videoElement.srcObject = evt.streams[0];
-    });
+  // connect video
+  const videoElement = document.querySelector("video#localVideo");
+  peerConnection.addEventListener("track", function (evt) {
+    if (evt.track.kind == "video") videoElement.srcObject = evt.streams[0];
+  });
 
-    return peerConnection;
+  return peerConnection;
 }
 
 async function negotiate() {
-    const localDescription = await peerConnection.createOffer()
-    await peerConnection.setLocalDescription(localDescription)
-    console.info("LocalDescription set")
+  const localDescription = await peerConnection.createOffer();
+  await peerConnection.setLocalDescription(localDescription);
+  console.info("LocalDescription set");
 
-    // wait for ICE gathering to complete
-    await iceGatheringCompleted()
+  // wait for ICE gathering to complete
+  await iceGatheringCompleted();
 
-    const offer = peerConnection.localDescription;
+  const offer = peerConnection.localDescription;
 
-    console.info("Offer:")
-    console.info(offer)
-    const offerSdp = document.getElementById('offerSdp');
-    offerSdp.textContent = offer.sdp;
+  console.info("Offer:");
+  console.info(offer);
+  const offerSdp = document.getElementById("offerSdp");
+  offerSdp.textContent = offer.sdp;
 
-    console.info("Send offer")
-    let response = await $fetch('offer', {
-        method: 'POST',
-        baseURL: 'http://127.0.0.1:8000',
-        body: offer,
-        headers: {
-            'Content-Type': 'application/json'
-        },
-    }).catch((error) => {
-        alert(error);
-    })
+  console.info("Send offer");
+  let { data: response, error } = await useApiFetch("offer", {
+    method: "POST",
+    body: offer,
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
-    console.info("Received Answer:")
-    console.info(response)
-    const answerSdp = document.getElementById('answerSdp');
-    answerSdp.textContent = response.sdp;
-    peerConnection.setRemoteDescription(response);
+  if (error.value) {
+    alert(error.value);
+  }
+
+  response = response.value;
+
+  console.info("Received Answer:");
+  console.info(response);
+  const answerSdp = document.getElementById("answerSdp");
+  answerSdp.textContent = response.sdp;
+  peerConnection.setRemoteDescription(response);
 }
 
 async function iceGatheringCompleted() {
-    return new Promise(function (resolve) {
-        if (peerConnection.iceGatheringState === 'complete') {
-            resolve();
-        } else {
-            function checkState() {
-                if (peerConnection.iceGatheringState === 'complete') {
-                    peerConnection.removeEventListener('icegatheringstatechange', checkState);
-                    resolve();
-                }
-            }
-            peerConnection.addEventListener('icegatheringstatechange', checkState);
+  return new Promise(function (resolve) {
+    if (peerConnection.iceGatheringState === "complete") {
+      resolve();
+    } else {
+      function checkState() {
+        if (peerConnection.iceGatheringState === "complete") {
+          peerConnection.removeEventListener(
+            "icegatheringstatechange",
+            checkState
+          );
+          resolve();
         }
-    });
+      }
+      peerConnection.addEventListener("icegatheringstatechange", checkState);
+    }
+  });
 }
 
 async function start() {
-    document.getElementById('start').style.display = 'none';
+  document.getElementById("start").style.display = "none";
 
-    peerConnection = createPeerConnection();
+  peerConnection = createPeerConnection();
 
-    try {
-        // TODO: think of the best framerate
-        const videoConstraints = {
-            video: {
-                frameRate: {
-                    exact: 20
-                },
-                // width: {min: 640, ideal: 1280, max: 1920},
-                // height: {min: 480, ideal: 720, max: 1080}
-            }
-        }
+  try {
+    // TODO: think of the best framerate
+    const videoConstraints = {
+      video: {
+        frameRate: {
+          exact: 20,
+        },
+        // width: {min: 640, ideal: 1280, max: 1920},
+        // height: {min: 480, ideal: 720, max: 1080}
+      },
+    };
 
-        const stream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
-        stream.getVideoTracks().forEach(function (track) {
-            peerConnection.addTrack(track, stream);
-        })
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: videoConstraints,
+    });
+    stream.getVideoTracks().forEach(function (track) {
+      peerConnection.addTrack(track, stream);
+    });
 
-        await negotiate();
-        console.info(peerConnection)
-    } catch (error) {
-        console.error('Error opening video camera.', error);
-    }
+    await negotiate();
+    console.info(peerConnection);
+  } catch (error) {
+    console.error("Error opening video camera.", error);
+  }
 
-    document.getElementById('stop').style.display = 'inline-block';
+  document.getElementById("stop").style.display = "inline-block";
 }
 
 function stop() {
-    document.getElementById('stop').style.display = 'none';
-    document.getElementById('start').style.display = 'inline-block';
+  document.getElementById("stop").style.display = "none";
+  document.getElementById("start").style.display = "inline-block";
 
-    // close data channel
-    if (dc) {
-        dc.close();
-    }
+  // close data channel
+  if (dc) {
+    dc.close();
+  }
 
-    // close transceivers
-    if (peerConnection.getTransceivers) {
-        peerConnection.getTransceivers().forEach(function (transceiver) {
-            if (transceiver.stop) {
-                transceiver.stop();
-            }
-        });
-    }
-
-    // close local audio / video
-    peerConnection.getSenders().forEach(function (sender) {
-        sender.track.stop();
+  // close transceivers
+  if (peerConnection.getTransceivers) {
+    peerConnection.getTransceivers().forEach(function (transceiver) {
+      if (transceiver.stop) {
+        transceiver.stop();
+      }
     });
+  }
 
-    // close peer connection
-    setTimeout(function () {
-        peerConnection.close();
-    }, 500);
+  // close local audio / video
+  peerConnection.getSenders().forEach(function (sender) {
+    sender.track.stop();
+  });
+
+  // close peer connection
+  setTimeout(function () {
+    peerConnection.close();
+  }, 500);
 }
-
 </script>
 
 <template>
+  <div>
+    <h1>Detection</h1>
     <div>
-        <h1>Detection</h1>
-        <div>
-            <video id="localVideo" autoplay playsinline controls="false" />
-        </div>
-
-        <button id="start" @click="start()">Start</button>
-        <button id="stop" style="display: none" @click="stop()">Stop</button>
-
-
-        <h2>State</h2>
-        <p>
-            ICE gathering state: <span id="iceGatheringState"></span>
-        </p>
-        <p>
-            ICE connection state: <span id="iceConnectionState"></span>
-        </p>
-        <p>
-            Signaling state: <span id="signalingState"></span>
-        </p>
-        <h2>Data channel</h2>
-        <pre ref="dataChannel" style="height: 200px;"></pre>
-        <h2>SDP</h2>
-
-        <h3>Offer</h3>
-        <pre id="offerSdp"></pre>
-
-        <h3>Answer</h3>
-        <pre id="answerSdp"></pre>
+      <video id="localVideo" autoplay playsinline controls="false" />
     </div>
+
+    <button id="start" @click="start()">Start</button>
+    <button id="stop" style="display: none" @click="stop()">Stop</button>
+
+    <h2>State</h2>
+    <p>ICE gathering state: <span id="iceGatheringState"></span></p>
+    <p>ICE connection state: <span id="iceConnectionState"></span></p>
+    <p>Signaling state: <span id="signalingState"></span></p>
+    <h2>Data channel</h2>
+    <pre ref="dataChannel" style="height: 200px"></pre>
+    <h2>SDP</h2>
+
+    <h3>Offer</h3>
+    <pre id="offerSdp"></pre>
+
+    <h3>Answer</h3>
+    <pre id="answerSdp"></pre>
+  </div>
 </template>
 
 <style lang='scss'></style>

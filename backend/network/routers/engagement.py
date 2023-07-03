@@ -9,5 +9,5 @@ router = APIRouter()
 with DatabaseService() as db_service:
 
     @router.get("/engagement/", response_model=List[Engagement])
-    async def get_test(from_datetime: datetime = None, to_datetime: datetime = None):
+    async def list_engagement(from_datetime: datetime = None, to_datetime: datetime = None):
         return db_service.engagement.list_by_datetime(from_datetime, to_datetime)
