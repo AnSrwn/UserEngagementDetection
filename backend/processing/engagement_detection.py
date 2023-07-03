@@ -113,7 +113,7 @@ with DatabaseService() as db_service:
                     db_service.engagement.add(
                         Engagement(
                             peer_connection=pc_id,
-                            time=datetime.now(),
+                            time=datetime.now().isoformat(),
                             boredom=round(boredom, 4),
                             engagement=round(engagement, 4),
                             confusion=round(confusion, 4),
