@@ -20,4 +20,7 @@ class EngagementRepository(GenericSqlRepository[Engagement], EngagementRepositor
             enteties = enteties.where(self._model_cls.time > from_datetime)
         if to_datetime != None:
             enteties = enteties.where(self._model_cls.time < to_datetime)
-        return self._session.exec(enteties).all()
+
+        result = self._session.exec(enteties).all()
+        result.sort(key=lambda x: x.time)
+        return result
