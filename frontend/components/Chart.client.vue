@@ -36,19 +36,18 @@ function createChart(data) {
   const lineGenerator = line()
     .x((d) => x(d.time))
     .y((d) => y(d.engagement));
-    // .curve(curveCatmullRom.alpha(0.5));
+  // .curve(curveCatmullRom.alpha(0.5));
 
   // Create the SVG container.
-  const svg = create("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("viewBox", [0, 0, width, height])
-    .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
+  const svg = create("svg").attr("width", width).attr("height", height);
+  // .attr("viewBox", [0, 0, width, height])
+  // .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
 
   // Add the x-axis.
   var format = timeFormat("%X");
   svg
     .append("g")
+    .attr("class", "x")
     .attr("transform", `translate(0,${height - marginBottom})`)
     .call(
       axisBottom(x).tickFormat(format)
@@ -59,6 +58,7 @@ function createChart(data) {
   // Add the y-axis, remove the domain line, add grid lines and a label.
   svg
     .append("g")
+    .attr("class", "y")
     .attr("transform", `translate(${marginLeft},0)`)
     .call(axisLeft(y).ticks(height / 40))
     .call((g) => g.select(".domain").remove())
@@ -82,11 +82,12 @@ function createChart(data) {
   // Append a path for the line.
   svg
     .append("path")
+    .datum(data)
     .attr("fill", "none")
     .attr("stroke", "steelblue")
-    .attr("stroke-width", 1.5);
-
-  svg.append("path").attr("class", "line").attr("d", lineGenerator(data));
+    .attr("stroke-width", 1.5)
+    .attr("class", "line")
+    .attr("d", lineGenerator(data));
 
   return svg.node();
 }
@@ -125,24 +126,35 @@ onMounted(() => {
           const plot = createChart(newValue);
           chartDiv.value.append(plot);
         } else {
-          const width = 928;
-          const height = 500;
-          const marginTop = 20;
-          const marginRight = 30;
-          const marginBottom = 30;
-          const marginLeft = 40;
-
           // Declare the x (horizontal position) scale.
           const x = scaleUtc(
-            extent(newValue, (d) => d.time),
+            extent(data, (d) => d.time),
             [marginLeft, width - marginRight]
           );
 
           // Declare the y (vertical position) scale.
           const y = scaleLinear(
-            [0, max(newValue, (d) => d.engagement)],
+            [0, max(data, (d) => d.engagement)],
             [height - marginBottom, marginTop]
           );
+
+          // Create the X axis:
+          x.domain([
+            0,
+            d3.max(data, function (d) {
+              return d.ser1;
+            }),
+          ]);
+          svg.selectAll(".myXaxis").transition().duration(3000).call(xAxis);
+
+          // create the Y axis
+          y.domain([
+            0,
+            d3.max(data, function (d) {
+              return d.ser2;
+            }),
+          ]);
+          svg.selectAll(".myYaxis").transition().duration(3000).call(yAxis);
 
           // TODO: https://plnkr.co/edit/ZEQlzJtHKcVdcAWmuwxA?p=preview&preview
           const plot = select("#myplot").transition();
