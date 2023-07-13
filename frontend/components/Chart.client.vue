@@ -1,15 +1,13 @@
 <!-- Composition API -->
 <script setup>
-import * as Plot from "@observablehq/plot";
-// import * as d3 from "d3";
 import { transition } from "d3-transition";
-import { line, curveCatmullRom } from "d3-shape";
+import { line } from "d3-shape";
 import { scaleLinear, scaleUtc } from "d3-scale";
 import { axisBottom, axisLeft } from "d3-axis";
 import { timeFormat } from "d3-time-format";
-import { select, selectAll } from "d3-selection";
+import { select } from "d3-selection";
 import { extent, max } from "d3-array";
-import { ref, defineExpose } from "vue";
+import { ref } from "vue";
 
 // Declare the chart dimensions and margins.
 // set the dimensions and margins of the graph
@@ -34,6 +32,8 @@ onMounted(() => {
   watch(
     () => props.data,
     (newValue, oldValue) => {
+      if (newValue === null) newValue = Array()
+      
       chartData.value = newValue;
 
       if (newValue.length) {

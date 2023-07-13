@@ -1,21 +1,20 @@
 <script setup>
 import { useApiFetch } from "~/composables/useApiFetch";
 
-// let engagementData = ref([]);
+let lastTimestamp = ref(0);
+let engagementData = ref(Array());
 
-// const { data, pending, error, refresh }
-const { data, refresh } = await useApiFetch("/engagement", {
+const { data, refresh } = await useApiFetch(`/engagement`, {
+  query: { from_datetime: lastTimestamp },
   transform: (data) => {
-    // if (data === undefined) {
-    //   return [];
-    // }
-
-    return data.map((item) => ({
+    const mappedData = data.map((item) => ({
       time: new Date(item.time),
       engagement: Number(item.engagement.toFixed(1)),
     }));
+    lastTimestamp.value = data.at(-1).time;
+    engagementData.value = [...engagementData.value, ...mappedData];
+    return mappedData;
   },
-  // server: false,
 });
 
 function refreshing() {
@@ -28,8 +27,7 @@ setInterval(refreshing, 3000);
 <template>
   <div>
     <h1>Dashboard</h1>
-    <!-- <div>Engagement: {{ data }}</div> -->
-    <Chart :data="data" />
+    <Chart :data="engagementData" />
   </div>
 </template>
 
