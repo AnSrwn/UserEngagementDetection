@@ -8,6 +8,7 @@ import { timeFormat } from "d3-time-format";
 import { select } from "d3-selection";
 import { extent, max } from "d3-array";
 import { ref } from "vue";
+import { v4 as uuidv4 } from "uuid";
 
 // Declare the chart dimensions and margins.
 // set the dimensions and margins of the graph
@@ -21,19 +22,20 @@ let y = null;
 let xAxis = null;
 let yAxis = null;
 
-const chartDiv = ref(null);
 let chartData = ref([]);
 
 const props = defineProps({
   data: Array,
 });
 
+const chartUuid = uuidv4();
+
 onMounted(() => {
   watch(
     () => props.data,
     (newValue, oldValue) => {
-      if (newValue === null) newValue = Array()
-      
+      if (newValue === null) newValue = Array();
+
       chartData.value = newValue;
 
       if (newValue.length) {
@@ -45,7 +47,7 @@ onMounted(() => {
 
 function onchartDivMounted() {
   // append the svg object to the body of the page
-  svg = select("#myplot")
+  svg = select(`#myplot-${chartUuid}`)
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -59,32 +61,32 @@ function onchartDivMounted() {
   svg
     .append("g")
     .attr("transform", "translate(0," + height + ")")
-    .attr("class", "myXaxis");
+    .attr("class", `myXaxis-${chartUuid}`);
 
   // Initialize an Y axis
   y = scaleLinear().range([height, 0]);
   yAxis = axisLeft().scale(y);
-  svg.append("g").attr("class", "myYaxis");
+  svg.append("g").attr("class", `myYaxis-${chartUuid}`);
 }
 
 function updateChart(data) {
   // Create the X axis:
   x.domain(extent(data, (d) => d.time));
-  svg.selectAll(".myXaxis").transition().duration(500).call(xAxis);
+  svg.selectAll(`.myXaxis-${chartUuid}`).transition().duration(500).call(xAxis);
 
   // create the Y axis
-  y.domain([0, max(data, (d) => d.engagement)]);
-  svg.selectAll(".myYaxis").transition().duration(500).call(yAxis);
+  y.domain([0, max(data, (d) => d.item)]);
+  svg.selectAll(`.myYaxis-${chartUuid}`).transition().duration(500).call(yAxis);
 
   // Create a update selection: bind to the new data
-  var u = svg.selectAll(".line").data([data], function (d) {
+  var u = svg.selectAll(`.line-${chartUuid}`).data([data], function (d) {
     return d.time;
   });
 
   // Updata the line
   u.enter()
     .append("path")
-    .attr("class", "line")
+    .attr("class", `line-${chartUuid}`)
     .merge(u)
     .transition()
     .duration(1000)
@@ -95,7 +97,7 @@ function updateChart(data) {
           return x(d.time);
         })
         .y(function (d) {
-          return y(d.engagement);
+          return y(d.item);
         })
     )
     .attr("fill", "none")
@@ -106,8 +108,10 @@ function updateChart(data) {
 
 <template>
   <div>
-    <h2>Engagement:</h2>
-    <div @vue:mounted="onchartDivMounted" ref="chartDiv" id="myplot"></div>
+    <div
+      @vue:mounted="onchartDivMounted"
+      v-bind:id="'myplot-' + chartUuid"
+    ></div>
   </div>
 </template>
 
