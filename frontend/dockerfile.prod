@@ -1,7 +1,15 @@
-# docker build -t frontend-prod -f .\dockerfile.prod .
+# Command to build image:
+# docker builder prune
+# docker build -t frontend-nuxt-prod -f .\dockerfile.prod .
+
+# More Information:
+# docker build -t frontend-nuxt-prod -f .\dockerfile.prod . --progress=plain
+
+# Run container:
+# docker run -d --restart=always --name frontend-nuxt-prod -p 3000:3000 frontend-nuxt-prod
 
 ARG BASE_URL_ARG='http://localhost:8000'
-ARG HOST_ARG='0.0.0.0'
+ARG HOST_ARG='localhost'
 ARG PORT_ARG=3000
 
 FROM node:20.4-slim as base
@@ -19,7 +27,6 @@ WORKDIR /src
 COPY --link package.json .
 COPY --link package-lock.json .
 
-# --ignore-scripts
 RUN npm install 
 
 COPY --link . .
@@ -29,10 +36,15 @@ RUN npm prune
 
 # Run
 FROM base
+# Renewing of ARGs is necessary to use them in this stage
+ARG HOST_ARG
+ARG PORT_ARG
 
-ENV HOST=$HOST_ARG
-ENV PORT=$PORT_ARG
+ENV HOST=${HOST_ARG}
+ENV PORT=${PORT_ARG}
+
+EXPOSE ${PORT_ARG}
 
 COPY --from=build /src/.output /src/.output
 
-CMD [ "node", ".output/server/index.mjs" ]
+CMD [ "node", "src/.output/server/index.mjs" ]
