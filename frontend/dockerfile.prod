@@ -8,6 +8,9 @@
 # Run container:
 # docker run -d --restart=always --name frontend-nuxt-prod -p 3000:3000 frontend-nuxt-prod
 
+# Export image:
+# docker save frontend-nuxt-prod | gzip > frontend-nuxt-prod
+
 ARG BASE_URL_ARG='http://localhost:8000'
 ARG HOST_ARG='localhost'
 ARG PORT_ARG=3000

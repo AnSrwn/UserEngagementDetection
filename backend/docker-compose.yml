@@ -44,9 +44,9 @@ services:
     networks:
       - backend-network
 
-  turn-server:
-    image: coturn/coturn:4.6.2
-    restart: always
-    network_mode: host
-    volumes:
-      - ./turnserver.conf:/etc/coturn/turnserver.conf
+  # turn-server:
+  #   image: coturn/coturn:4.6.2
+  #   restart: always
+  #   network_mode: host
+  #   volumes:
+  #     - ./turnserver.conf:/etc/coturn/turnserver.conf

@@ -32,7 +32,7 @@ def on_startup():
     with DatabaseService() as db_service:
         db_service.create_db_and_tables()
     # use heartbeat to test efficiency of multi-processing
-    asyncio.create_task(heartbeat())
+    # asyncio.create_task(heartbeat())
 
 
 app.include_router(test.router)
