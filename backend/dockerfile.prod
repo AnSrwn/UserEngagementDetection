@@ -9,14 +9,14 @@
 # docker run -d --restart=always --name backend-fastapi-prod -p 3000:3000 frontend-nuxt-prod
 
 # Export image:
-# docker save backend-fastapi-prod | gzip > backend-fastapi-prod
+# docker save backend-fastapi-prod | gzip > backend-fastapi-prod.tar.gz
 
 FROM tensorflow/tensorflow:2.12.0
 
 ARG ROOT_PATH_ARG='/api/v1'
 ARG ALLOWED_IPS_ARG='*'
 ARG HOST_ARG='0.0.0.0'
-ARG PORT=8000
+ARG PORT_ARG=8000
 # ARG POSTGRES_DB_HOST_ARG='database:5432'
 # ARG POSTGRES_DB_ARG='db_1'
 # ARG POSTGRES_USER_ARG='db_user'
@@ -27,9 +27,13 @@ ARG PORT=8000
 # ENV POSTGRES_USER=${POSTGRES_USER_ARG}
 # ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD_ARG}
 ENV ROOT_PATH=${ROOT_PATH_ARG}
-ENV ALLOWED_IPS=${ALLOWED_IPS_ARG}
 ENV HOST=${HOST_ARG}
+ENV PORT=${PORT_ARG}
 ENV DATABASE_URL='postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_DB_HOST/$POSTGRES_DB'
+
+# Setting uvicorn environment variable, because in cmd it does not work
+# https://www.uvicorn.org/settings/
+ENV UVICORN_FORWARDED_ALLOW_IPS=${ALLOWED_IPS_ARG}
 
 RUN pip install fastapi
 RUN pip install uvicorn
@@ -55,4 +59,6 @@ COPY . .
 
 EXPOSE ${PORT}
 
-CMD ["uvicorn", "main:app", "--proxy-headers", "--host", "${HOST}", "--port", "8000", "--root-path", "${ROOT_PATH}", "--forwarded-allow-ips", "${ALLOWED_IPS}"]
+# CMD ["uvicorn", "main:app", "--proxy-headers", "--host", "127.0.0.1", "--port", "8000", "--root-path", "${ROOT_PATH}", "--forwarded-allow-ips", "${ALLOWED_IPS}"]
+# CMD uvicorn main:app --host ${HOST} --port ${PORT} --root-path ${ROOT_PATH} --forwarded-allow-ips ${ALLOWED_IPS} --proxy-headers
+CMD uvicorn main:app --host ${HOST} --port ${PORT} --root-path ${ROOT_PATH} --proxy-headers

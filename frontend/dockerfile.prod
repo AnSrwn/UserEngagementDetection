@@ -9,15 +9,15 @@
 # docker run -d --restart=always --name frontend-nuxt-prod -p 3000:3000 frontend-nuxt-prod
 
 # Export image:
-# docker save frontend-nuxt-prod | gzip > frontend-nuxt-prod
+# docker save frontend-nuxt-prod | gzip > frontend-nuxt-prod.tar.gz
 
 ARG BASE_URL_ARG='http://localhost:8000'
-ARG HOST_ARG='localhost'
+ARG STUN_SERVER_URL_ARG='stun:stun.l.google.com:19302'
+ARG HOST_ARG='0.0.0.0'
 ARG PORT_ARG=3000
 
 FROM node:20.4-slim as base
 
-ENV BASE_URL=${BASE_URL_ARG}
 ENV NODE_ENV=production
 
 # Build
@@ -40,9 +40,13 @@ RUN npm prune
 # Run
 FROM base
 # Renewing of ARGs is necessary to use them in this stage
+ARG BASE_URL_ARG
+ARG STUN_SERVER_URL_ARG
 ARG HOST_ARG
 ARG PORT_ARG
 
+ENV NUXT_PUBLIC_BASE_URL=${BASE_URL_ARG}
+ENV NUXT_PUBLIC_STUN_SERVER_URL=${STUN_SERVER_URL_ARG}
 ENV HOST=${HOST_ARG}
 ENV PORT=${PORT_ARG}
 

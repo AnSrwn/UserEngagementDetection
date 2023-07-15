@@ -4,7 +4,8 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   runtimeConfig: {
     public: {
-      baseURL: process.env.BASE_URL || 'http://localhost:8000',
+      baseUrl: '', // is overwritten by env variable NUXT_PUBLIC_BASE_URL
+      stunServerUrl: '', // is overwritten by env variable NUXT_PUBLIC_STUN_SERVER_URL
     },
   },
   alias: {
