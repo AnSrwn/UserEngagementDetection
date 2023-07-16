@@ -7,7 +7,7 @@ let boredomData = ref(Array());
 let confusionData = ref(Array());
 let frustrationData = ref(Array());
 
-const { data, refresh } = await useApiFetch(`/engagement`, {
+const { data, refresh } = await useApiFetch(`engagement/`, {
   query: { from_datetime: lastTimestamp },
   transform: (data) => {
     lastTimestamp.value = data.at(-1).time;
