@@ -14,13 +14,13 @@ If you want to manage the database with a tool, Adminer can be installed.
 
 ## nginx Settings
 1. Remove index files. Maybe you need to enter a space, so that it does not reset.  
-<img src="images/nginx-index-files.png" alt="Remove index files" width="600">
+    <img src="images/nginx-index-files.png" alt="Remove index files" width="600">   
 
 2. Disable Apache Proxy   
-<img src="images/nginx-apache.png" alt="Disable Apache Proxy" width="400">
+    <img src="images/nginx-apache.png" alt="Disable Apache Proxy" width="400">   
 
 3. Add additional reverse proxy directives   
-<img src="images/nginx-directives.png" alt="Additional nginx directives" width="400">
+    <img src="images/nginx-directives.png" alt="Additional nginx directives" width="400">   
 
     ```
     # Frontend Nuxt   
@@ -48,14 +48,14 @@ If you want to manage the database with a tool, Adminer can be installed.
 1. Search for "postgres" in the `Docker Image Catalog` in Plesk and download "postgres:15". Other versions should work as well, but 15 is tested.
 2. Click `Run(local)`
 3. Enable `Automatic start after system reboot`, disable `Automatic port mapping` and click OK.
-<img src="images/frontend-run.png" alt="Run database docker image" width="600">
+<img src="images/frontend-run.png" alt="Run database docker image" width="600">   
 4. Go to container settings.
 5. Add `Manual Mapping`. You cann use 5432 or any other free port.
 6. Add the following environment variables:   
 `POSTGRES_DB`: database name   
 `POSTGRES_USER`: database user   
 `POSTGRES_PASSWORD`: user password  
-<img src="images/database-container-settings.png" alt="Container Settings" width="600">
+<img src="images/database-container-settings.png" alt="Container Settings" width="600">   
 7. Click OK to restart the container.
 
 ## Adminer (Optional)
