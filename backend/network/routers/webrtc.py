@@ -1,6 +1,7 @@
 import logging
 import uuid
 import concurrent.futures
+import multiprocessing
 
 from fastapi import APIRouter
 from aiortc import RTCPeerConnection, RTCSessionDescription
@@ -16,7 +17,11 @@ router = APIRouter()
 peerConnections = set()
 relay = MediaRelay()
 
-processExcecutor = concurrent.futures.ProcessPoolExecutor()
+log.info(f"Number of cores: {multiprocessing.cpu_count()}")
+
+processExcecutor = concurrent.futures.ProcessPoolExecutor(
+    mp_context=multiprocessing.get_context("spawn")
+)
 
 
 @router.post("/offer", response_model=RTCSessionDescription)
