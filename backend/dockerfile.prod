@@ -2,6 +2,11 @@
 # docker builder prune
 # docker build -t backend-fastapi-prod -f .\dockerfile.prod .
 
+# Using DockerHub 
+# Version number must be updated
+# docker build -t ansrwn/user_engagement_detection:backend-1 -f .\dockerfile.prod . 
+# docker push ansrwn/user_engagement_detection:backend-1
+
 # More Information:
 # docker build -t backend-fastapi-prod -f .\dockerfile.prod . --progress=plain
 

@@ -1,15 +1,7 @@
 # How to deploy to Plesk
-The application is deployed to Plesk by only using docker containers. The database image can be pulled from a public repository, the custom frontend and backend images must be uploaded and loaded.   
+The application is deployed to Plesk by only using docker containers. The images can be pulled from public repositories.    
 Additionally nginx directives must be set.   
 If you want to manage the database with a tool, Adminer can be installed.
-
-## How to import a custom docker image into Plesk
-1. Move the packed image (e.g. backend-fastpi-prod.tar.gz) to the server by using (S)FTP or SSH.
-2. Unpack and load the image by using the following command:
-    ```
-    docker load -i backend-fastpi-prod.tar.gz
-    ```
-3. The image is now visible in Plesk on the Docker page.
 
 
 ## nginx Settings
@@ -45,7 +37,7 @@ If you want to manage the database with a tool, Adminer can be installed.
 
 
 ## Database
-1. Search for "postgres" in the `Docker Image Catalog` in Plesk and download "postgres:15". Other versions should work as well, but 15 is tested.
+1. Search for "postgres" in the Docker Image Catalog in Plesk and download "postgres:15". Other versions should work as well, but 15 is tested.
 2. Click `Run(local)`
 3. Enable `Automatic start after system reboot`, disable `Automatic port mapping` and click OK.   
     <img src="images/frontend-run.png" alt="Run database docker image" width="600">    
@@ -60,8 +52,8 @@ If you want to manage the database with a tool, Adminer can be installed.
 
 7. Click OK to restart the container.    
 
-## Adminer (Optional)
-1. Search for "adminer" in the `Docker Image Catalog` in Plesk and download the "latest".
+## (Optional) Adminer
+1. Search for "adminer" in the`Docker Image Catalog in Plesk and download the "latest".
 2. Click `Run(local)`
 3. Enable `Automatic start after system reboot`, disable `Automatic port mapping` and click OK.
 4. Go to container settings.
@@ -76,7 +68,7 @@ If you want to manage the database with a tool, Adminer can be installed.
 
 
 ## Backend
-1. Import the [backend-fastapi-prod](backend-fastapi-prod.tar.gz) image into Plesk.
+1. Search for "ansrwn/user_engagement_detection" in the Docker Image Catalog in Plesk and download "backend" with the highest version number.
 2. Click `Run(local)`
 3. Enable `Automatic start after system reboot`, disable `Automatic port mapping` and click OK.
 4. Go to container settings.
@@ -99,7 +91,7 @@ If you want to manage the database with a tool, Adminer can be installed.
 `UVICORN_FORWARDED_ALLOW_IPS`: List of trusted IPs. As long the application is run behind a trusted proxy, all connections can be trusted. Otherwise this should be updated. (Default value: *)
 
 ## Frontend
-1. Import the [frontend-nuxt-prod](frontend-nuxt-prod.tar.gz) image into Plesk.
+1. Search for "ansrwn/user_engagement_detection" in the Docker Image Catalog in Plesk and download "fronted" with the highest version number.
 2. Click `Run(local)`
 3. Enable `Automatic start after system reboot`, disable `Automatic port mapping` and click OK.
 4. Go to container settings.
@@ -112,3 +104,12 @@ If you want to manage the database with a tool, Adminer can be installed.
 `NUXT_PUBLIC_STUN_SERVER_URL`: URL of the STUN Server. If another STUN Server should be used, this can be changed. The STUN Server is necessary for WebRTC and when frontend and backend are behind reverse proxies. (Default value: stun:stun.l.google.com:19302)    
 `HOST`: Host IP (Default value: 0.0.0.0)    
 `PORT`: Exposed Port of the docker container. (Default value: 3000)    
+
+
+## (Optional) How to manually import a custom docker image into Plesk
+1. Move the packed image (e.g. backend-fastpi-prod.tar.gz) to the server by using (S)FTP or SSH.
+2. Unpack and load the image by using the following command:
+    ```
+    docker load -i backend-fastpi-prod.tar.gz
+    ```
+3. The image is now visible in Plesk on the Docker page.
