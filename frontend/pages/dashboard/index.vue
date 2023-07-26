@@ -46,7 +46,8 @@ const { data, refresh } = await useApiFetch(`engagement/`, {
 function refreshing() {
   refresh();
 }
-setInterval(refreshing, 3000);
+// setInterval(refreshing, 3000);
+refresh();
 </script>
 
 <template>

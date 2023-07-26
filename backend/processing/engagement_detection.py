@@ -76,6 +76,7 @@ with DatabaseService() as db_service:
 
     def detectEngagement(serialized, pc_id: str):
         try:
+            frame_time = datetime.now().isoformat()
             image = msgpack.unpackb(serialized, object_hook=m.decode)
             detector = dlib.get_frontal_face_detector()
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -113,7 +114,7 @@ with DatabaseService() as db_service:
                     db_service.engagement.add(
                         Engagement(
                             peer_connection=pc_id,
-                            time=datetime.now().isoformat(),
+                            time=frame_time,
                             boredom=round(boredom, 4),
                             engagement=round(engagement, 4),
                             confusion=round(confusion, 4),

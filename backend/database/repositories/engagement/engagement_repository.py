@@ -7,7 +7,11 @@ from datetime import datetime
 
 class EngagementRepositoryBase(GenericRepository[Engagement], ABC):
     @abstractmethod
-    def list_by_datetime(
+    def list_raw_by_datetime(
         self, from_datetime: Optional[datetime], to_datetime: Optional[datetime]
     ) -> List[Engagement]:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def deleteAll(self) -> int:
         raise NotImplementedError()
