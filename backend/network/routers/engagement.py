@@ -35,11 +35,11 @@ with DatabaseService() as db_service:
         return db_service.engagement.list_raw_by_datetime(from_datetime, to_datetime)
     
     @router.get("/engagement/simple", response_model=EngagementSimple)
-    async def list_engagement(from_datetime: datetime = None, to_datetime: datetime = None):
-        # from_datetime = from_datetime.isoformat(sep=" ", timespec="seconds")
-        # to_datetime = to_datetime.isoformat(sep=" ", timespec="seconds")
+    async def list_engagement(time_period: int = 5):
+        to_datetime = datetime.now()
+        from_datetime = to_datetime - timedelta(seconds=time_period)
 
-        raw_engagement = db_service.engagement.list_raw_by_datetime(from_datetime, to_datetime)
+        raw_engagement = db_service.engagement.list_raw_by_datetime(from_datetime.isoformat(), to_datetime.isoformat())
 
         engagement_per_client: dict[str, List[Engagement]] = {}
 
@@ -73,7 +73,7 @@ with DatabaseService() as db_service:
             }
 
         simple_engagment = EngagementSimple()
-        simple_engagment.count = len(average_per_client)
+        simple_engagment.users = len(average_per_client)
         for key, value in average_per_client.items():
             if value[EngagementType.BOREDOM] == EngagementLevel.HIGH:
                 simple_engagment.boredom.high = simple_engagment.boredom.high + 1
