@@ -42,7 +42,8 @@ setInterval(refreshing, 5000);
         <div>Frustration: {{ frustrationData }}</div>
         <div>Number of users: {{ numberOfUsers }}</div>
       </div>
-      <div>
+      <div class="donut-chart">
+        <h2>Engagement</h2>
         <DonutChart v-if="numberOfUsers > 0" :data="engagementData" />
         <div v-else>There are no users online</div>
       </div>
@@ -51,9 +52,16 @@ setInterval(refreshing, 5000);
 </template>
 
 <style lang='scss' scoped>
+.donut-chart {
+  width: 100%;
+  height: 100%;
+  max-width: 500px;
+  max-height: 500px;
+}
 .charts-container {
   display: flex;
   flex-wrap: wrap;
+  flex-direction: column;
   gap: 30px 30px;
 }
 </style>

@@ -42,8 +42,7 @@ function onChartDivMounted() {
   // Setup donut chart
   svg = select(`#donut_chart-${chartUuid}`)
     .append("svg")
-    .attr("width", width)
-    .attr("height", height);
+    .attr("viewBox", `0 0 ${width} ${height}`);
 
   gElement = svg
     .append("g")
