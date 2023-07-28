@@ -55,15 +55,20 @@ function updateChart(data) {
   var pieChart = pie()
     .startAngle(-(Math.PI / 2) * 5)
     .value((d) => d[1])
-    .sort(null);
+    .sort(null)(Object.entries(data));
 
-  const data_ready = pieChart(Object.entries(data));
+  // const data_ready = pieChart(Object.entries(data));
 
-  // Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
-  svg
-    .selectAll("whatever")
-    .data(data_ready)
-    .join("path")
+  // Create a update selection: bind to the new data
+  var u = svg.selectAll(`.donut_chart-${chartUuid}`).data(pieChart);
+
+  // Updata the line
+  u.enter()
+    .append("path")
+    .attr("class", `donut_chart-${chartUuid}`)
+    .merge(u)
+    .transition()
+    .duration(2000)
     .attr(
       "d",
       arc()
@@ -73,6 +78,21 @@ function updateChart(data) {
     .attr("fill", (d) => color(d.data[0]))
     .attr("stroke", "black")
     .style("stroke-width", "2px");
+
+  // Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
+  // svg
+  //   .selectAll(`#donut_chart-${chartUuid}`)
+  //   .data(data_ready)
+  //   .join("path")
+  //   .attr(
+  //     "d",
+  //     arc()
+  //       .innerRadius(100) // This is the size of the donut hole
+  //       .outerRadius(radius)
+  //   )
+  //   .attr("fill", (d) => color(d.data[0]))
+  //   .attr("stroke", "black")
+  //   .style("stroke-width", "2px");
 }
 </script>
 
