@@ -3,10 +3,10 @@ import { useApiFetch } from "~/composables/useApiFetch";
 
 let high = 0
 let numberOfUsers = ref()
-let engagementData = ref({});
-let boredomData = ref({});
-let confusionData = ref({});
-let frustrationData = ref({});
+let engagementData = ref();
+let boredomData = ref();
+let confusionData = ref();
+let frustrationData = ref();
 
 const { data, refresh } = await useApiFetch(`engagement/simple/`, {
   query: { time_period: 5 },
@@ -21,13 +21,15 @@ const { data, refresh } = await useApiFetch(`engagement/simple/`, {
   },
 });
 
-refresh();
+
 
 function refreshing() {
-  refresh();
   high++;
+  numberOfUsers.value = 12;
   engagementData.value = { "high": high, "middle": 4, "low": 2 };
+  refresh();
 }
+refreshing();
 setInterval(refreshing, 5000);
 </script>
 

@@ -28,17 +28,12 @@ const props = defineProps({
 
 const chartUuid = uuidv4();
 
-onMounted(() => {
-  watch(
-    () => props.data,
-    (newValue, oldValue) => {
-      if (newValue === null) newValue = {};
+function onNewValue(newValue) {
+  if (newValue === null) newValue = {};
 
-      chartData.value = newValue;
-      updateChart(newValue);
-    }
-  );
-});
+  chartData.value = newValue;
+  updateChart(newValue);
+}
 
 function onChartDivMounted() {
   // append the svg object to the body of the page
@@ -48,6 +43,14 @@ function onChartDivMounted() {
     .attr("height", height)
     .append("g")
     .attr("transform", `translate(${width / 2},${height / 2})`);
+
+  onNewValue(props.data);
+  watch(
+    () => props.data,
+    (newValue, oldValue) => {
+      onNewValue(newValue);
+    }
+  );
 }
 
 function updateChart(data) {
