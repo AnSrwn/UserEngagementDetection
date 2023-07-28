@@ -1,8 +1,8 @@
 <script setup>
 import { useApiFetch } from "~/composables/useApiFetch";
 
-let high = 0
-let numberOfUsers = ref()
+let high = 0;
+let numberOfUsers = ref();
 let engagementData = ref();
 let boredomData = ref();
 let confusionData = ref();
@@ -21,12 +21,10 @@ const { data, refresh } = await useApiFetch(`engagement/simple/`, {
   },
 });
 
-
-
 function refreshing() {
   high++;
   numberOfUsers.value = 12;
-  engagementData.value = { "high": high, "middle": 4, "low": 2 };
+  engagementData.value = { high: high, middle: 4, low: 2 };
   refresh();
 }
 refreshing();
@@ -37,13 +35,17 @@ setInterval(refreshing, 5000);
   <div>
     <h1>Analysis</h1>
     <div class="charts-container">
-      <div>Engagement: {{ engagementData }}</div>
-      <div>Boredom: {{ boredomData }}</div>
-      <div>Confusion: {{ confusionData }}</div>
-      <div>Frustration: {{ frustrationData }}</div>
-      <div>Number of users: {{ numberOfUsers }}</div>
-      <DonutChart v-if="numberOfUsers > 0" :data="engagementData" />
-      <div v-else>There are no users online</div>
+      <div>
+        <div>Engagement: {{ engagementData }}</div>
+        <div>Boredom: {{ boredomData }}</div>
+        <div>Confusion: {{ confusionData }}</div>
+        <div>Frustration: {{ frustrationData }}</div>
+        <div>Number of users: {{ numberOfUsers }}</div>
+      </div>
+      <div>
+        <DonutChart v-if="numberOfUsers > 0" :data="engagementData" />
+        <div v-else>There are no users online</div>
+      </div>
     </div>
   </div>
 </template>
