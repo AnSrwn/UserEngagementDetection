@@ -8,12 +8,12 @@ import { select } from "d3-selection";
 import { ref } from "vue";
 import { v4 as uuidv4 } from "uuid";
 
-const margin = 40;
+const margin = 0;
 const width = 450;
 const height = 450;
 
 const radius = Math.min(width, height) / 2 - margin;
-const innerRadius = 120;
+const innerRadius = 140;
 const cornerRadius = 8;
 const padAngle = 0.01; // marign betwenn segments
 const transitionDuration = 2000;
