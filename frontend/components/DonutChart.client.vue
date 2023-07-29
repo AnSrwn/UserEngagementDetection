@@ -29,13 +29,14 @@ let svg = null;
 let gElement = null;
 let chartPie = null;
 let chartArc = null;
+let tooltip = null;
 let chartData = ref({});
 
 function onNewValue(newValue) {
   if (newValue === null) newValue = {};
 
   chartData.value = newValue;
-  updateChart(newValue);
+  updateChart(Object.entries(newValue));
 }
 
 function onChartDivMounted() {
@@ -48,16 +49,25 @@ function onChartDivMounted() {
     .append("g")
     .attr("transform", `translate(${width / 2},${height / 2})`);
 
-  chartPie = pie()
-    .startAngle(-(Math.PI / 2) * 5)
-    .value((d) => d[1])
-    .sort(null)
-    .padAngle(padAngle);
+  // chartPie = pie()
+  //   .startAngle(-(Math.PI / 2) * 5)
+  //   .value((d) => d[1])
+  //   .sort(null)
+  //   .padAngle(padAngle);
 
   chartArc = arc()
     .innerRadius(innerRadius)
     .outerRadius(radius)
     .cornerRadius(cornerRadius);
+
+  tooltip = select(`#donut_chart-${chartUuid}`)
+    .append("div")
+    .attr("id", "tooltip")
+    .attr("class", "toolTip").html(`
+      <div class="tooltip-value">
+        <span id="value"></span> User
+      </div>
+    `);
 
   // Handle new data
   onNewValue(props.data);
@@ -67,6 +77,27 @@ function onChartDivMounted() {
       onNewValue(newValue);
     }
   );
+}
+
+function onMouseEnter(d) {
+  const x = chartArc.centroid(d) + width / 2;
+  const y = chartArc.centroid(d) + height / 2;
+
+  // console.log(select(this));
+  console.log(d);
+  console.log(d.data);
+  console.log(d.data());
+
+  tooltip.style("opacity", 1);
+  tooltip.style(
+    "transform",
+    `translate(calc( -50% + ${x}px), calc(-100% + ${y}px))`
+  );
+  tooltip.select("#value").text(d.explicitOriginalTarget.__data__.value);
+}
+
+function onMouseLeave(d) {
+  tooltip.style("opacity", 0);
 }
 
 // Store the displayed angles in _current.
@@ -81,21 +112,26 @@ function arcTween(a) {
 }
 
 function updateChart(data) {
+  chartPie = pie()
+    .startAngle(-(Math.PI / 2) * 5)
+    .value((d) => d[1])
+    .sort(null)
+    .padAngle(padAngle)(data, (d) => d[0]);
+
   // add transition to new path
   gElement
-    .datum(Object.entries(data))
     .selectAll("path")
-    .data(chartPie)
     .transition()
     .duration(transitionDuration)
     .attrTween("d", arcTween);
 
   // add new data
   gElement
-    .datum(Object.entries(data))
     .selectAll("path")
-    .data(chartPie)
-    .enter()
+    .data(chartPie, function (d) {
+      return d.data[0];
+    })
+    .enter() // There was no matching element for a given datum.
     .append("path")
     .attr("class", `donut_chart-${chartUuid}`)
     .attr("fill", (d) => color(d.data[0]))
@@ -104,13 +140,11 @@ function updateChart(data) {
       this._current = d;
     });
 
+  // add tooltips
+  gElement.on("mouseenter", onMouseEnter).on("mouseleave", onMouseLeave);
+
   // remove data not used
-  gElement
-    .datum(Object.entries(data))
-    .selectAll("path")
-    .data(chartPie)
-    .exit()
-    .remove();
+  gElement.exit().remove();
 }
 </script>
 
@@ -123,4 +157,5 @@ function updateChart(data) {
   </div>
 </template>
 
-<style lang='scss'></style>
+<style lang='scss'>
+</style>
