@@ -87,46 +87,38 @@ function onChartDivMounted() {
 </script>
 
 <template>
-  <div id="bar-container">
-    <el-popover placement="right" :width="fit - content" trigger="hover">
-      <template #reference>
-        <div @vue:mounted="onChartDivMounted" id="bar-chart">
-          <div id="bar" ref="bar"></div>
-        </div>
-      </template>
-      <div>
-        <span
-          ><b>Highly Confused:</b> {{ highlyConfusedPercentage }} % ({{
-            highlyConfusedCount
-          }}
-          Users)</span
-        >
-        <br />
-        <span
-          ><b>Midly Confused:</b> {{ midlyConfusedPercentage }} % ({{
-            midlyConfusedCount
-          }}
-          Users)</span
-        >
-        <br />
-        <span
-          ><b>Lowly Confused:</b> {{ midlyConfusedPercentage }} % ({{
-            midlyConfusedCount
-          }}
-          Users)</span
-        >
+  <el-popover placement="right" :width="fit - content" trigger="hover">
+    <template #reference>
+      <div @vue:mounted="onChartDivMounted" id="bar-chart">
+        <div id="bar" ref="bar"></div>
       </div>
-    </el-popover>
-  </div>
+    </template>
+    <div>
+      <span
+        ><b>Highly Confused:</b> {{ highlyConfusedPercentage }} % ({{
+          highlyConfusedCount
+        }}
+        Users)</span
+      >
+      <br />
+      <span
+        ><b>Midly Confused:</b> {{ midlyConfusedPercentage }} % ({{
+          midlyConfusedCount
+        }}
+        Users)</span
+      >
+      <br />
+      <span
+        ><b>Lowly Confused:</b> {{ midlyConfusedPercentage }} % ({{
+          midlyConfusedCount
+        }}
+        Users)</span
+      >
+    </div>
+  </el-popover>
 </template>
 
 <style lang='scss'>
-#bar-container {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-}
-
 #bar-chart {
   display: flex;
   flex-direction: column-reverse;
