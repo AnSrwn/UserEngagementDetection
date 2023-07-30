@@ -3,6 +3,7 @@ import { useApiFetch } from "~/composables/useApiFetch";
 
 let high = 0;
 let numberOfUsers = ref();
+let allData = ref();
 let engagementData = ref();
 let boredomData = ref();
 let confusionData = ref();
@@ -12,10 +13,11 @@ const { data, refresh } = await useApiFetch(`engagement/simple/`, {
   query: { time_period: 5 },
   transform: (data) => {
     // numberOfUsers.value = data.users;
+    // allData = data;
     // engagementData.value = data.engagement;
-    boredomData.value = data.boredom;
+    // boredomData.value = data.boredom;
     // confusionData.value = data.confusion;
-    frustrationData.value = data.frustration;
+    // frustrationData.value = data.frustration;
 
     return data;
   },
@@ -23,9 +25,18 @@ const { data, refresh } = await useApiFetch(`engagement/simple/`, {
 
 function refreshing() {
   high++;
-  numberOfUsers.value = 6 + high;
+  numberOfUsers.value = 12 + high;
   engagementData.value = { high: high, middle: 4, low: 2 };
-  confusionData.value = { high: high, middle: 2, low: 8 };
+  confusionData.value = { high: 3, middle: 2, low: high };
+  boredomData.value = { high: 5, middle: 3, low: high };
+  frustrationData.value = { high: 3, middle: 1, low: high };
+  allData.value = {
+    numberOfUsers: numberOfUsers,
+    engagement: engagementData,
+    boredom: boredomData,
+    confusion: confusionData,
+    frustration: frustrationData,
+  };
   refresh();
 }
 refreshing();
@@ -40,6 +51,8 @@ setInterval(refreshing, 5000);
       <div>Users online</div>
     </el-card>
     <el-divider />
+    <MoodWave v-if="numberOfUsers > 0" :data="allData" />
+    <div v-else>There are no users online</div>
     <div class="charts-container">
       <el-card class="engagement-card">
         <template #header>
