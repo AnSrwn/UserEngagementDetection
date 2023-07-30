@@ -88,31 +88,35 @@ function onChartDivMounted() {
 
 <template>
   <div id="bar-container">
-    <div @vue:mounted="onChartDivMounted" id="bar-chart">
-      <div id="bar" ref="bar"></div>
-    </div>
-    <div class="tooltip">
-      <span class="tooltip-text"
-        ><b>Highly Confused:</b> {{ highlyConfusedPercentage }} % ({{
-          highlyConfusedCount
-        }}
-        Users)</span
-      >
-      <br />
-      <span class="tooltip-text"
-        ><b>Midly Confused:</b> {{ midlyConfusedPercentage }} % ({{
-          midlyConfusedCount
-        }}
-        Users)</span
-      >
-      <br />
-      <span class="tooltip-text"
-        ><b>Lowly Confused:</b> {{ midlyConfusedPercentage }} % ({{
-          midlyConfusedCount
-        }}
-        Users)</span
-      >
-    </div>
+    <el-popover placement="right" :width="fit - content" trigger="hover">
+      <template #reference>
+        <div @vue:mounted="onChartDivMounted" id="bar-chart">
+          <div id="bar" ref="bar"></div>
+        </div>
+      </template>
+      <div>
+        <span
+          ><b>Highly Confused:</b> {{ highlyConfusedPercentage }} % ({{
+            highlyConfusedCount
+          }}
+          Users)</span
+        >
+        <br />
+        <span
+          ><b>Midly Confused:</b> {{ midlyConfusedPercentage }} % ({{
+            midlyConfusedCount
+          }}
+          Users)</span
+        >
+        <br />
+        <span
+          ><b>Lowly Confused:</b> {{ midlyConfusedPercentage }} % ({{
+            midlyConfusedCount
+          }}
+          Users)</span
+        >
+      </div>
+    </el-popover>
   </div>
 </template>
 
@@ -132,34 +136,10 @@ function onChartDivMounted() {
   border-radius: 8px;
 }
 
-#bar-chart:hover ~ .tooltip {
-  visibility: visible;
-  opacity: 1;
-}
-
 #bar {
   height: v-bind(barPercentage);
   background-color: v-bind(barBackgroundColor);
   transition: all 2s ease;
   border-radius: 8px;
-}
-
-.tooltip {
-  visibility: hidden;
-  width: fit-content;
-  height: fit-content;
-  margin: 15px;
-  padding: 10px;
-  background-color: white;
-  text-align: start;
-  border-radius: 8px;
-  z-index: 1;
-  opacity: 0;
-  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-  transition: opacity 0.3s;
-
-  .tooltip-text {
-    padding: 20px;
-  }
 }
 </style>
