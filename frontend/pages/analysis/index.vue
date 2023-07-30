@@ -23,7 +23,7 @@ const { data, refresh } = await useApiFetch(`engagement/simple/`, {
 
 function refreshing() {
   high++;
-  numberOfUsers.value = 12;
+  numberOfUsers.value = 6 + high;
   engagementData.value = { high: high, middle: 4, low: 2 };
   confusionData.value = { high: high, middle: 2, low: 8 };
   refresh();
@@ -35,47 +35,61 @@ setInterval(refreshing, 5000);
 <template>
   <div>
     <h1>Analysis</h1>
-    <p>
-      Engagement: {{ engagementData }}<br />Boredom: {{ boredomData
-      }}<br />Confusion: {{ confusionData }}<br />Frustration:
-      {{ frustrationData }}<br />Number of users: {{ numberOfUsers }}
-    </p>
+    <el-card class="info-card">
+      <div class="large-text">{{ numberOfUsers }}</div>
+      <div>Users online</div>
+    </el-card>
+    <el-divider />
     <div class="charts-container">
-      <div class="engagement-card">
-        <h2>Engagement</h2>
+      <el-card class="engagement-card">
+        <template #header>
+          <h2>Engagement</h2>
+        </template>
         <DonutChart v-if="numberOfUsers > 0" :data="engagementData" />
         <div v-else>There are no users online</div>
-      </div>
-      <div class="confusion-card">
-        <h2>Confusion</h2>
+      </el-card>
+      <el-card class="confusion-card">
+        <template #header>
+          <h2>Confusion</h2>
+        </template>
         <VerticalBarChart
           v-if="numberOfUsers > 0"
           class="confusion-chart"
           :data="confusionData"
         />
         <div v-else>There are no users online</div>
-      </div>
+      </el-card>
     </div>
   </div>
 </template>
 
 <style lang='scss' scoped>
-.engagement-card {
-  width: 500px;
-  height: 500px;
-}
-.confusion-card {
-  width: 500px;
-  .confusion-chart {
-    width: 100%;
-    height: 500px;
+.info-card {
+  width: fit-content;
+  height: fit-content;
+
+  .large-text {
+    font-weight: bold;
+    font-size: 2.5em;
   }
 }
 .charts-container {
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
-  justify-content: space-around;
+  height: 500px;
   gap: 30px 30px;
+}
+.engagement-card {
+  width: 500px;
+  height: fit-content;
+}
+.confusion-card {
+  width: 500px;
+  height: fit-content;
+  .confusion-chart {
+    width: 100%;
+    height: fit-content;
+  }
 }
 </style>

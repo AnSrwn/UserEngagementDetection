@@ -122,7 +122,7 @@ function onChartDivMounted() {
 #bar-chart {
   display: flex;
   flex-direction: column-reverse;
-  height: 100%;
+  height: 450px;
   width: 100px;
   background-color: #ddd;
   border-radius: 8px;
