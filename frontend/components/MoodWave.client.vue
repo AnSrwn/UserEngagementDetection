@@ -44,8 +44,6 @@ function setAllPercentages(newValue) {
 
 function setColors() {
   overallMoodColor.value = interpolateRgb(
-    // "rgb(0, 0, 0)",
-    // "rgb(238, 198, 31)"
     "rgb(0, 0, 0)",
     "rgb(255, 225, 99)"
   )(overallMoodPercentage.value / 100);
@@ -55,30 +53,21 @@ function setColors() {
     .setAttribute("fill", overallMoodColor.value);
 
   let engagementColor = interpolateRgb(
-    // "rgb(22, 27, 112)",
-    // "rgb(254, 88, 33)"
     "rgb(25, 29, 87)",
     "rgb(247, 121, 79)"
   )(engagementPercentage.value / 100);
 
   let boredomColor = interpolateRgb(
-    // "rgb(217, 17, 17)",
-    // "rgb(128, 128, 128)"
     "rgb(252, 139, 139)",
     "rgb(54, 54, 54)"
   )(boredomPercentage.value / 100);
 
   let confusionColor = interpolateRgb(
-    // "rgb(128, 0, 128)",
-    // "rgb(64, 224, 208)"
     "rgb(204, 137, 204)",
     "rgb(2, 66, 60)"
   )(confusionPercentage.value / 100);
 
   let frustrationColor = interpolateRgb(
-    // "rgb(255, 255, 0)"
-    // "rgb(135, 20, 16)",
-    // "rgb(255, 165, 0)"
     "rgb(252, 199, 101)",
     "rgb(79, 6, 3)"
   )(frustrationPercentage.value / 100);
