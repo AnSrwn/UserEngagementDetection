@@ -6,7 +6,12 @@ const props = defineProps({
 
 let barPercentage = ref("0%");
 let barBackgroundColor = ref("#0aa849");
-let tooltipText = ref("No data available");
+let highlyConfusedCount = ref(0);
+let midlyConfusedCount = ref(0);
+let lowlyConfusedCount = ref(0);
+let highlyConfusedPercentage = ref(0);
+let midlyConfusedPercentage = ref(0);
+let lowlyConfusedPercentage = ref(0);
 
 function updateBar(percentageValue) {
   barPercentage.value = `${percentageValue}%`;
@@ -26,8 +31,12 @@ function updateColor(percentageValue) {
   barBackgroundColor.value = newColor;
 }
 
+function getUserCount(confusionData) {
+  return confusionData.high + confusionData.middle + confusionData.low;
+}
+
 function confusionDataToPercentage(confusionData) {
-  let userCount = confusionData.high + confusionData.middle + confusionData.low;
+  let userCount = getUserCount(confusionData);
   let confusion = confusionData.high + confusionData.middle / 2;
 
   if (userCount === 0) return 0;
@@ -36,8 +45,20 @@ function confusionDataToPercentage(confusionData) {
 }
 
 function updateTooltip(confusionData) {
-  let text = `Highly confused: ${confusionData.high}\n Midly confused: ${confusionData.middle} \n Not confused: ${confusionData.low}`;
-  tooltipText.value = text;
+  let userCount = getUserCount(confusionData);
+  highlyConfusedCount.value = confusionData.high;
+  midlyConfusedCount.value = confusionData.middle;
+  lowlyConfusedCount.value = confusionData.low;
+
+  highlyConfusedPercentage.value = Math.ceil(
+    (confusionData.high / userCount) * 100
+  );
+  midlyConfusedPercentage.value = Math.ceil(
+    (confusionData.middle / userCount) * 100
+  );
+  lowlyConfusedPercentage.value = Math.ceil(
+    (confusionData.low / userCount) * 100
+  );
 }
 
 function onNewValue(newValue) {
@@ -71,7 +92,26 @@ function onChartDivMounted() {
       <div id="bar" ref="bar"></div>
     </div>
     <div class="tooltip">
-      <span id="tooltip-text">{{ tooltipText }}</span>
+      <span class="tooltip-text"
+        ><b>Highly Confused:</b> {{ highlyConfusedPercentage }} % ({{
+          highlyConfusedCount
+        }}
+        Users)</span
+      >
+      <br />
+      <span class="tooltip-text"
+        ><b>Midly Confused:</b> {{ midlyConfusedPercentage }} % ({{
+          midlyConfusedCount
+        }}
+        Users)</span
+      >
+      <br />
+      <span class="tooltip-text"
+        ><b>Lowly Confused:</b> {{ midlyConfusedPercentage }} % ({{
+          midlyConfusedCount
+        }}
+        Users)</span
+      >
     </div>
   </div>
 </template>
@@ -106,15 +146,20 @@ function onChartDivMounted() {
 
 .tooltip {
   visibility: hidden;
-  width: 160px;
+  width: fit-content;
   height: fit-content;
-  background-color: #555;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px 0;
+  margin: 15px;
+  padding: 10px;
+  background-color: white;
+  text-align: start;
+  border-radius: 8px;
   z-index: 1;
   opacity: 0;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
   transition: opacity 0.3s;
+
+  .tooltip-text {
+    padding: 20px;
+  }
 }
 </style>
