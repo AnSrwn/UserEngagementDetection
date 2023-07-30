@@ -27,7 +27,7 @@ function refreshing() {
   high++;
   numberOfUsers.value = 12 + high;
   engagementData.value = { high: high, middle: 4, low: 2 };
-  confusionData.value = { high: 0, middle: 0, low: 1 };
+  confusionData.value = { high: 1, middle: high, low: 8 };
   boredomData.value = { high: 5, middle: 3, low: high };
   frustrationData.value = { high: 3, middle: 1, low: high };
   allData.value = {
