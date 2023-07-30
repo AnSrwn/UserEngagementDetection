@@ -196,6 +196,7 @@ function onChartDivMounted() {
 #overall-mood {
   height: 50px;
   width: 100%;
+  border-radius: 8px 8px 0 0;
   background-color: v-bind(overallMoodColor);
 }
 .color-box {

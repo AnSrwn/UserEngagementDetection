@@ -95,21 +95,21 @@ function onChartDivMounted() {
     </template>
     <div>
       <span
-        ><b>Highly Confused:</b> {{ highlyConfusedPercentage }} % ({{
+        ><b>Highly Confused:</b> {{ highlyConfusedPercentage }}% ({{
           highlyConfusedCount
         }}
         Users)</span
       >
       <br />
       <span
-        ><b>Midly Confused:</b> {{ midlyConfusedPercentage }} % ({{
+        ><b>Maybe Confused:</b> {{ midlyConfusedPercentage }}% ({{
           midlyConfusedCount
         }}
         Users)</span
       >
       <br />
       <span
-        ><b>Lowly Confused:</b> {{ lowlyConfusedPercentage }} % ({{
+        ><b>Lowly Confused:</b> {{ lowlyConfusedPercentage }}% ({{
           lowlyConfusedCount
         }}
         Users)</span

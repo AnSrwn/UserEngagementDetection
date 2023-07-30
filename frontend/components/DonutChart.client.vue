@@ -6,7 +6,6 @@ import { arc, pie } from "d3-shape";
 import { scaleOrdinal } from "d3-scale";
 import { select } from "d3-selection";
 import { ref } from "vue";
-import { v4 as uuidv4 } from "uuid";
 
 const margin = 0;
 const width = 450;
@@ -19,8 +18,6 @@ const padAngle = 0.01; // marign betwenn segments
 const transitionDuration = 2000;
 const color = scaleOrdinal().range(["#0aa849", "#e3df0b", "#a11f0b"]);
 
-const chartUuid = uuidv4();
-
 const props = defineProps({
   data: Object,
 });
@@ -29,19 +26,47 @@ let svg = null;
 let gElement = null;
 let chartPie = null;
 let chartArc = null;
-let tooltip = null;
 let chartData = ref({});
+
+let highlyEngagedCount = ref(0);
+let midlyEngagedCount = ref(0);
+let lowlyEngagedCount = ref(0);
+let highlyEngagedPercentage = ref(0);
+let midlyEngagedPercentage = ref(0);
+let lowlyEngagedPercentage = ref(0);
+
+function getUserCount(engagementData) {
+  return engagementData.high + engagementData.middle + engagementData.low;
+}
+
+function updateTooltip(engagementData) {
+  let userCount = getUserCount(engagementData);
+  highlyEngagedCount.value = engagementData.high;
+  midlyEngagedCount.value = engagementData.middle;
+  lowlyEngagedCount.value = engagementData.low;
+
+  highlyEngagedPercentage.value = Math.ceil(
+    (engagementData.high / userCount) * 100
+  );
+  midlyEngagedPercentage.value = Math.ceil(
+    (engagementData.middle / userCount) * 100
+  );
+  lowlyEngagedPercentage.value = Math.ceil(
+    (engagementData.low / userCount) * 100
+  );
+}
 
 function onNewValue(newValue) {
   if (newValue === null) newValue = {};
 
   chartData.value = newValue;
   updateChart(Object.entries(newValue));
+  updateTooltip(newValue);
 }
 
 function onChartDivMounted() {
   // Setup donut chart
-  svg = select(`#donut_chart-${chartUuid}`)
+  svg = select(`#donut_chart`)
     .append("svg")
     .attr("viewBox", `0 0 ${width} ${height}`);
 
@@ -49,25 +74,10 @@ function onChartDivMounted() {
     .append("g")
     .attr("transform", `translate(${width / 2},${height / 2})`);
 
-  // chartPie = pie()
-  //   .startAngle(-(Math.PI / 2) * 5)
-  //   .value((d) => d[1])
-  //   .sort(null)
-  //   .padAngle(padAngle);
-
   chartArc = arc()
     .innerRadius(innerRadius)
     .outerRadius(radius)
     .cornerRadius(cornerRadius);
-
-  tooltip = select(`#donut_chart-${chartUuid}`)
-    .append("div")
-    .attr("id", "tooltip")
-    .attr("class", "toolTip").html(`
-      <div class="tooltip-value">
-        <span id="value"></span> User
-      </div>
-    `);
 
   // Handle new data
   onNewValue(props.data);
@@ -77,27 +87,6 @@ function onChartDivMounted() {
       onNewValue(newValue);
     }
   );
-}
-
-function onMouseEnter(d) {
-  const x = chartArc.centroid(d) + width / 2;
-  const y = chartArc.centroid(d) + height / 2;
-
-  // console.log(select(this));
-  console.log(d);
-  console.log(d.data);
-  console.log(d.data());
-
-  tooltip.style("opacity", 1);
-  tooltip.style(
-    "transform",
-    `translate(calc( -50% + ${x}px), calc(-100% + ${y}px))`
-  );
-  tooltip.select("#value").text(d.explicitOriginalTarget.__data__.value);
-}
-
-function onMouseLeave(d) {
-  tooltip.style("opacity", 0);
 }
 
 // Store the displayed angles in _current.
@@ -133,15 +122,12 @@ function updateChart(data) {
     })
     .enter() // There was no matching element for a given datum.
     .append("path")
-    .attr("class", `donut_chart-${chartUuid}`)
+    .attr("class", `donut_chart`)
     .attr("fill", (d) => color(d.data[0]))
     .attr("d", chartArc)
     .each(function (d) {
       this._current = d;
     });
-
-  // add tooltips
-  gElement.on("mouseenter", onMouseEnter).on("mouseleave", onMouseLeave);
 
   // remove data not used
   gElement.exit().remove();
@@ -149,12 +135,33 @@ function updateChart(data) {
 </script>
 
 <template>
-  <div>
-    <div
-      @vue:mounted="onChartDivMounted"
-      v-bind:id="'donut_chart-' + chartUuid"
-    ></div>
-  </div>
+  <el-popover placement="right" :width="fit - content" trigger="hover">
+    <template #reference>
+      <div @vue:mounted="onChartDivMounted" v-bind:id="'donut_chart'"></div>
+    </template>
+    <div>
+      <span
+        ><b>Highly Engaged:</b> {{ highlyEngagedPercentage }}% ({{
+          highlyEngagedCount
+        }}
+        Users)</span
+      >
+      <br />
+      <span
+        ><b>Maybe Engaged:</b> {{ midlyEngagedPercentage }}% ({{
+          midlyEngagedCount
+        }}
+        Users)</span
+      >
+      <br />
+      <span
+        ><b>Lowly Engaged:</b> {{ lowlyEngagedPercentage }}% ({{
+          lowlyEngagedCount
+        }}
+        Users)</span
+      >
+    </div>
+  </el-popover>
 </template>
 
 <style lang='scss'>
