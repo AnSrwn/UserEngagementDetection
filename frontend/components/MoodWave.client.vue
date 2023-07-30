@@ -84,7 +84,7 @@ function setColors() {
 function onNewValue(newValue) {
   if (newValue === null) return;
 
-  numberOfUsers.value = newValue.numberOfUsers;
+  numberOfUsers.value = newValue.users;
   setAllPercentages(newValue);
   setColors();
 }

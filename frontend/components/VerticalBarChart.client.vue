@@ -109,8 +109,8 @@ function onChartDivMounted() {
       >
       <br />
       <span
-        ><b>Lowly Confused:</b> {{ midlyConfusedPercentage }} % ({{
-          midlyConfusedCount
+        ><b>Lowly Confused:</b> {{ lowlyConfusedPercentage }} % ({{
+          lowlyConfusedCount
         }}
         Users)</span
       >

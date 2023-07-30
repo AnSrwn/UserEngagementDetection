@@ -27,11 +27,11 @@ function refreshing() {
   high++;
   numberOfUsers.value = 12 + high;
   engagementData.value = { high: high, middle: 4, low: 2 };
-  confusionData.value = { high: 3, middle: 2, low: high };
+  confusionData.value = { high: 0, middle: 0, low: 1 };
   boredomData.value = { high: 5, middle: 3, low: high };
   frustrationData.value = { high: 3, middle: 1, low: high };
   allData.value = {
-    numberOfUsers: numberOfUsers,
+    users: numberOfUsers,
     engagement: engagementData,
     boredom: boredomData,
     confusion: confusionData,
@@ -52,7 +52,6 @@ setInterval(refreshing, 5000);
     </el-card>
     <el-divider />
     <MoodWave v-if="numberOfUsers > 0" :data="allData" />
-    <div v-else>There are no users online</div>
     <div class="charts-container">
       <el-card class="engagement-card">
         <template #header>
