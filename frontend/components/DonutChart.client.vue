@@ -135,7 +135,7 @@ function updateChart(data) {
 </script>
 
 <template>
-  <el-popover placement="right" :width="fit - content" trigger="hover">
+  <el-popover placement="top" :width="fit - content" trigger="hover">
     <template #reference>
       <div @vue:mounted="onChartDivMounted" v-bind:id="'donut_chart'"></div>
     </template>

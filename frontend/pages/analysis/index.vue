@@ -12,31 +12,31 @@ let frustrationData = ref();
 const { data, refresh } = await useApiFetch(`engagement/simple/`, {
   query: { time_period: 5 },
   transform: (data) => {
-    // numberOfUsers.value = data.users;
-    // allData = data;
-    // engagementData.value = data.engagement;
-    // boredomData.value = data.boredom;
-    // confusionData.value = data.confusion;
-    // frustrationData.value = data.frustration;
+    numberOfUsers.value = data.users;
+    allData = data;
+    engagementData.value = data.engagement;
+    boredomData.value = data.boredom;
+    confusionData.value = data.confusion;
+    frustrationData.value = data.frustration;
 
     return data;
   },
 });
 
 function refreshing() {
-  high++;
-  numberOfUsers.value = 12 + high;
-  engagementData.value = { high: high, middle: 4, low: 2 };
-  confusionData.value = { high: 1, middle: high, low: 8 };
-  boredomData.value = { high: 5, middle: 3, low: high };
-  frustrationData.value = { high: 3, middle: 1, low: high };
-  allData.value = {
-    users: numberOfUsers,
-    engagement: engagementData,
-    boredom: boredomData,
-    confusion: confusionData,
-    frustration: frustrationData,
-  };
+  // high++;
+  // numberOfUsers.value = 12 + high;
+  // engagementData.value = { high: high, middle: 4, low: 2 };
+  // confusionData.value = { high: 1, middle: high, low: 8 };
+  // boredomData.value = { high: 5, middle: 3, low: high };
+  // frustrationData.value = { high: 3, middle: 1, low: high };
+  // allData.value = {
+  //   users: numberOfUsers,
+  //   engagement: engagementData,
+  //   boredom: boredomData,
+  //   confusion: confusionData,
+  //   frustration: frustrationData,
+  // };
   refresh();
 }
 refreshing();
@@ -60,17 +60,44 @@ setInterval(refreshing, 5000);
         <DonutChart v-if="numberOfUsers > 0" :data="engagementData" />
         <div v-else>There are no users online</div>
       </el-card>
-      <el-card class="confusion-card">
-        <template #header>
-          <h2>Confusion</h2>
-        </template>
-        <VerticalBarChart
-          v-if="numberOfUsers > 0"
-          class="confusion-chart"
-          :data="confusionData"
-        />
-        <div v-else>There are no users online</div>
-      </el-card>
+      <div class="bar-chart-container">
+        <el-card class="bar-card">
+          <template #header>
+            <h2>Confusion</h2>
+          </template>
+          <BarChart
+            v-if="numberOfUsers > 0"
+            class="bar-chart"
+            :data="confusionData"
+            tooltipText="Confused"
+          />
+          <div v-else>There are no users online</div>
+        </el-card>
+        <el-card class="bar-card">
+          <template #header>
+            <h2>Boredom</h2>
+          </template>
+          <BarChart
+            v-if="numberOfUsers > 0"
+            class="bar-chart"
+            :data="boredomData"
+            tooltipText="Bored"
+          />
+          <div v-else>There are no users online</div>
+        </el-card>
+        <el-card class="bar-card">
+          <template #header>
+            <h2>Frustration</h2>
+          </template>
+          <BarChart
+            v-if="numberOfUsers > 0"
+            class="bar-chart"
+            :data="frustrationData"
+            tooltipText="Frustrated"
+          />
+          <div v-else>There are no users online</div>
+        </el-card>
+      </div>
     </div>
   </div>
 </template>
@@ -92,14 +119,19 @@ setInterval(refreshing, 5000);
   height: 500px;
   gap: 30px 30px;
 }
+.bar-chart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 30px 30px;
+}
 .engagement-card {
   width: 500px;
   height: fit-content;
 }
-.confusion-card {
+.bar-card {
   width: 500px;
   height: fit-content;
-  .confusion-chart {
+  .bar-chart {
     width: 100%;
     height: fit-content;
   }

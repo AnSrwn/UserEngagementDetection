@@ -2,16 +2,17 @@
 <script setup>
 const props = defineProps({
   data: Object,
+  tooltipText: String,
 });
 
 let barPercentage = ref("0%");
 let barBackgroundColor = ref("#0aa849");
-let highlyConfusedCount = ref(0);
-let midlyConfusedCount = ref(0);
-let lowlyConfusedCount = ref(0);
-let highlyConfusedPercentage = ref(0);
-let midlyConfusedPercentage = ref(0);
-let lowlyConfusedPercentage = ref(0);
+let highlyCount = ref(0);
+let midlyCount = ref(0);
+let lowlyCount = ref(0);
+let highlyPercentage = ref(0);
+let midlyPercentage = ref(0);
+let lowlyPercentage = ref(0);
 
 function updateBar(percentageValue) {
   barPercentage.value = `${percentageValue}%`;
@@ -31,40 +32,40 @@ function updateColor(percentageValue) {
   barBackgroundColor.value = newColor;
 }
 
-function getUserCount(confusionData) {
-  return confusionData.high + confusionData.middle + confusionData.low;
+function getUserCount(data) {
+  return data.high + data.middle + data.low;
 }
 
-function confusionDataToPercentage(confusionData) {
-  let userCount = getUserCount(confusionData);
-  let confusion = confusionData.high + confusionData.middle / 2;
+function dataToPercentage(data) {
+  let userCount = getUserCount(data);
+  let relevantUsers = data.high + data.middle / 2;
 
   if (userCount === 0) return 0;
 
-  return Math.ceil((confusion / userCount) * 100);
+  return Math.ceil((relevantUsers / userCount) * 100);
 }
 
-function updateTooltip(confusionData) {
-  let userCount = getUserCount(confusionData);
-  highlyConfusedCount.value = confusionData.high;
-  midlyConfusedCount.value = confusionData.middle;
-  lowlyConfusedCount.value = confusionData.low;
+function updateTooltip(data) {
+  let userCount = getUserCount(data);
+  highlyCount.value = data.high;
+  midlyCount.value = data.middle;
+  lowlyCount.value = data.low;
 
-  highlyConfusedPercentage.value = Math.ceil(
-    (confusionData.high / userCount) * 100
+  highlyPercentage.value = Math.ceil(
+    (data.high / userCount) * 100
   );
-  midlyConfusedPercentage.value = Math.ceil(
-    (confusionData.middle / userCount) * 100
+  midlyPercentage.value = Math.ceil(
+    (data.middle / userCount) * 100
   );
-  lowlyConfusedPercentage.value = Math.ceil(
-    (confusionData.low / userCount) * 100
+  lowlyPercentage.value = Math.ceil(
+    (data.low / userCount) * 100
   );
 }
 
 function onNewValue(newValue) {
   if (newValue === null) return;
 
-  let percentageValue = confusionDataToPercentage(newValue);
+  let percentageValue = dataToPercentage(newValue);
 
   if (percentageValue < 0) percentageValue = 0;
   if (percentageValue > 100) percentageValue = 100;
@@ -87,7 +88,7 @@ function onChartDivMounted() {
 </script>
 
 <template>
-  <el-popover placement="right" :width="fit - content" trigger="hover">
+  <el-popover placement="top" :width="fit - content" trigger="hover">
     <template #reference>
       <div @vue:mounted="onChartDivMounted" id="bar-chart">
         <div id="bar" ref="bar"></div>
@@ -95,22 +96,22 @@ function onChartDivMounted() {
     </template>
     <div>
       <span
-        ><b>Highly Confused:</b> {{ highlyConfusedPercentage }}% ({{
-          highlyConfusedCount
+        ><b>Highly {{ props.tooltipText }}:</b> {{ highlyPercentage }}% ({{
+          highlyCount
         }}
         Users)</span
       >
       <br />
       <span
-        ><b>Maybe Confused:</b> {{ midlyConfusedPercentage }}% ({{
-          midlyConfusedCount
+        ><b>Maybe {{ props.tooltipText }}:</b> {{ midlyPercentage }}% ({{
+          midlyCount
         }}
         Users)</span
       >
       <br />
       <span
-        ><b>Lowly Confused:</b> {{ lowlyConfusedPercentage }}% ({{
-          lowlyConfusedCount
+        ><b>Lowly {{ props.tooltipText }}:</b> {{ lowlyPercentage }}% ({{
+          lowlyCount
         }}
         Users)</span
       >
@@ -122,14 +123,15 @@ function onChartDivMounted() {
 #bar-chart {
   display: flex;
   flex-direction: column-reverse;
-  height: 450px;
-  width: 100px;
+  height: 80px;
+  width: 450px;
   background-color: #ddd;
   border-radius: 8px;
 }
 
 #bar {
-  height: v-bind(barPercentage);
+  width: v-bind(barPercentage);
+  height: 100%;
   background-color: v-bind(barBackgroundColor);
   transition: all 2s ease;
   border-radius: 8px;
