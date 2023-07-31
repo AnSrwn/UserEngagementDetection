@@ -1,17 +1,19 @@
-from database.models import Engagement
-from database.database_service import DatabaseService
-import msgpack
-import msgpack_numpy
+import concurrent.futures
+import logging
+from datetime import datetime
+
 import cv2
 import dlib
-import numpy
-import logging
 import keras
-import concurrent.futures
-
+import msgpack
+import msgpack_numpy
+import numpy
 from aiortc import MediaStreamTrack
 from numpy import mat as matrix
-from datetime import datetime
+
+from common.prediction_frequency import PredictionFrequency
+from database.database_service import DatabaseService
+from database.models import Engagement
 
 log = logging.getLogger("uvicorn.debug")
 
@@ -26,17 +28,20 @@ with DatabaseService() as db_service:
         pc_id: str = None
         frame_counter = 0
         process_executor = None
+        prediction_frequency = None
 
         def __init__(
                 self,
                 track,
                 pc_id: str,
                 process_executor: concurrent.futures.ProcessPoolExecutor,
+                prediction_frequency: PredictionFrequency,
         ):
             super().__init__()
             self.track = track
             self.pc_id = pc_id
             self.process_executor = process_executor
+            self.prediction_frequency = prediction_frequency
 
         async def recv(self):
             frame = await self.track.recv()
@@ -47,7 +52,7 @@ with DatabaseService() as db_service:
 
             self.frame_counter += 1
 
-            if self.frame_counter == 20:
+            if self.frame_counter == self.prediction_frequency.get_frequency():
                 self.frame_counter = 0
 
                 try:

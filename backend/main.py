@@ -1,19 +1,17 @@
-import asyncio
 import logging
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from database.database_service import DatabaseService
+from network.routers import engagement
 from network.routers import test
 from network.routers import webrtc
-from network.routers import engagement
-from common.heartbeat import heartbeat
 
 log = logging.getLogger("uvicorn.debug")
 
 app = FastAPI(title="UserEngagementDetection")
 log.info("FastAPI started")
-
 
 # We define authorizations for middleware components
 app.add_middleware(
@@ -32,7 +30,7 @@ app.add_middleware(
 def on_startup():
     with DatabaseService() as db_service:
         db_service.create_db_and_tables()
-    # use heartbeat to test efficiency of multi-processing
+    # use heartbeat to test efficiency of multiprocessing
     # asyncio.create_task(heartbeat())
 
 
