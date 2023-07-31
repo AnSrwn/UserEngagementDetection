@@ -1,5 +1,5 @@
 <script setup>
-import { useApiFetch } from "~/composables/useApiFetch";
+import {useApiFetch} from "~/composables/useApiFetch";
 
 let high = 0;
 let numberOfUsers = ref();
@@ -9,8 +9,8 @@ let boredomData = ref();
 let confusionData = ref();
 let frustrationData = ref();
 
-const { data, refresh } = await useApiFetch(`engagement/simple/`, {
-  query: { time_period: 5 },
+const {data, refresh} = await useApiFetch(`engagement/simple/`, {
+  query: {time_period: 5},
   transform: (data) => {
     numberOfUsers.value = data.users;
     allData = data;
@@ -39,8 +39,21 @@ function refreshing() {
   // };
   refresh();
 }
-refreshing();
-setInterval(refreshing, 5000);
+
+let requestInterval;
+
+onMounted(() => {
+  refreshing();
+  requestInterval = setInterval(refreshing, 5000);
+})
+
+onDeactivated(() => {
+  clearInterval(requestInterval);
+})
+
+onBeforeUnmount(() => {
+  clearInterval(requestInterval);
+})
 </script>
 
 <template>
@@ -50,14 +63,14 @@ setInterval(refreshing, 5000);
       <div class="large-text">{{ numberOfUsers }}</div>
       <div>Users online</div>
     </el-card>
-    <el-divider />
-    <MoodWave v-if="numberOfUsers > 0" :data="allData" />
+    <el-divider/>
+    <MoodWave v-if="numberOfUsers > 0" :data="allData"/>
     <div class="charts-container">
       <el-card class="engagement-card">
         <template #header>
           <h2>Engagement</h2>
         </template>
-        <DonutChart v-if="numberOfUsers > 0" :data="engagementData" />
+        <DonutChart v-if="numberOfUsers > 0" :data="engagementData"/>
         <div v-else>There are no users online</div>
       </el-card>
       <div class="bar-chart-container">
@@ -66,10 +79,10 @@ setInterval(refreshing, 5000);
             <h2>Confusion</h2>
           </template>
           <BarChart
-            v-if="numberOfUsers > 0"
-            class="bar-chart"
-            :data="confusionData"
-            tooltipText="Confused"
+              v-if="numberOfUsers > 0"
+              :data="confusionData"
+              class="bar-chart"
+              tooltipText="Confused"
           />
           <div v-else>There are no users online</div>
         </el-card>
@@ -78,10 +91,10 @@ setInterval(refreshing, 5000);
             <h2>Boredom</h2>
           </template>
           <BarChart
-            v-if="numberOfUsers > 0"
-            class="bar-chart"
-            :data="boredomData"
-            tooltipText="Bored"
+              v-if="numberOfUsers > 0"
+              :data="boredomData"
+              class="bar-chart"
+              tooltipText="Bored"
           />
           <div v-else>There are no users online</div>
         </el-card>
@@ -90,10 +103,10 @@ setInterval(refreshing, 5000);
             <h2>Frustration</h2>
           </template>
           <BarChart
-            v-if="numberOfUsers > 0"
-            class="bar-chart"
-            :data="frustrationData"
-            tooltipText="Frustrated"
+              v-if="numberOfUsers > 0"
+              :data="frustrationData"
+              class="bar-chart"
+              tooltipText="Frustrated"
           />
           <div v-else>There are no users online</div>
         </el-card>
@@ -112,6 +125,7 @@ setInterval(refreshing, 5000);
     font-size: 2.5em;
   }
 }
+
 .charts-container {
   display: flex;
   flex-wrap: wrap;
@@ -119,18 +133,22 @@ setInterval(refreshing, 5000);
   height: 500px;
   gap: 30px 30px;
 }
+
 .bar-chart-container {
   display: flex;
   flex-direction: column;
   gap: 30px 30px;
 }
+
 .engagement-card {
   width: 500px;
   height: fit-content;
 }
+
 .bar-card {
   width: 500px;
   height: fit-content;
+
   .bar-chart {
     width: 100%;
     height: fit-content;
