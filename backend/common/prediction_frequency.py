@@ -40,23 +40,35 @@ class PredictionFrequency:
 
         reactor.run(installSignalHandlers=False)
 
+    def create_thread(self):
+        return Thread(target=self.run_prediction_frequency_loop)
+
     def __init__(self, executor: concurrent.futures.ProcessPoolExecutor, ):
         self.executor = executor
-        self.thread = Thread(target=self.run_prediction_frequency_loop)
+        self.thread = self.create_thread()
 
     def get_frequency(self):
         return self.prediction_frequency
 
     def start_thread(self):
         if self.status == FrequencyStatus.STOPPED:
+            if self.thread is None:
+                self.thread = self.create_thread()
+
             if not self.thread.is_alive():
                 self.thread.start()
-                self.status = FrequencyStatus.RUNNING
+
+            self.status = FrequencyStatus.RUNNING
 
     def stop_thread(self):
         if self.status == FrequencyStatus.RUNNING:
-            self.prediction_frequency_task.stop()
-            self.thread.join()
+            try:
+                self.prediction_frequency_task.stop()
+            except Exception as e:
+                log.error(f"Tried to stop a LoopingCall that was not running: {e}")
             self.thread = None
-            reactor.stop()
+            # try:
+            #     reactor.stop()
+            # except Exception as e:
+            #     log.error(f"Tried to stop a Reactor that was not running: {e}")
             self.status = FrequencyStatus.STOPPED
