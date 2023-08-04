@@ -202,7 +202,8 @@ async function onCameraChange() {
 }
 
 .privacy-consent-card {
-  width: 400px;
+  width: 100%;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
 }
@@ -219,24 +220,17 @@ async function onCameraChange() {
 }
 
 #localVideo {
-  width: 640px;
-  height: 480px;
+  width: 100%;
+  max-width: 640px;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
   background: darkgrey url('/images/icon_video_camera_off_64.png') 50% 50% / 10% no-repeat;
   border-radius: 8px;
 }
 
-.video-placeholder {
-  width: 640px;
-  height: 480px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: gray;
-}
-
 .technical-infos {
-  width: 640px;
+  width: 100%;
+  max-width: 640px;
   display: flex;
   justify-content: space-between;
 }
