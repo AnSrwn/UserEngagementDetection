@@ -103,15 +103,12 @@ function getVideoTrack(stream) {
 }
 
 async function start() {
-  document.getElementById("start").style.display = "none";
-
   webRtc.createPeerConnection();
 
   try {
     stream = await getStream();
     const track = getVideoTrack(stream);
 
-    // TODO Maybe rescale track before sending it with WebRTC
     sender = webRtc.localPeerConnection.addTrack(track, stream)
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
@@ -125,14 +122,9 @@ async function start() {
   } catch (error) {
     console.error("Error opening video camera.", error);
   }
-
-  document.getElementById("stop").style.display = "inline-block";
 }
 
 function stop() {
-  document.getElementById("stop").style.display = "none";
-  document.getElementById("start").style.display = "inline-block";
-
   if (stream !== null) {
     stream.getTracks().forEach(function (track) {
       track.stop();
@@ -158,71 +150,80 @@ async function onCameraChange() {
     <h1>Detection</h1>
 
     <!-- Step 1 -->
-    <div v-if="step === 1">
-      <div>Before using this application please read the
-        <NuxtLink target="_blank" to="/privacy">data privacy policy</NuxtLink>
-        . To continue, accept it by clicking on the checkbox.
-      </div>
-      <el-checkbox v-model="privacyAgreed" label="I read and agree to the data privacy policy." size="large"/>
-      <br/>
-      <el-button :disabled="privacyAgreed === false" type="primary" @click="step = 2">Start Video Recording</el-button>
+    <div v-if="step === 1" class="step-1-body">
+      <el-card class="privacy-consent-card">
+        <div>Before using this application please read the
+          <NuxtLink target="_blank" to="/privacy">data privacy policy</NuxtLink>
+          . To continue, accept it by clicking on the checkbox.
+        </div>
+        <el-checkbox v-model="privacyAgreed" label="I read and agree to the data privacy policy." size="large"/>
+        <br/>
+        <el-button class="privacy-agreed-start-button" :disabled="privacyAgreed === false" type="primary" @click="step = 2">Start Session</el-button>
+      </el-card>
     </div>
 
     <!-- Step 2 -->
-    <div class="step-2-body">
-      <video id="localVideo" ref="videoContainer" autoplay playsinline/>
+    <div v-if="step === 2" class="step-2-body">
+      <video id="localVideo" ref="videoContainer" autoplay playsinline preload="none"/>
+
+      <div class="technical-infos">
+        <el-select v-if="cameraList !== null && cameraList.length > 0" ref="cameraSelection" v-model="selectedCamera"
+                   class="camera-selection" placeholder="Select" size="large">
+          <el-option
+              v-for="camera in cameraList"
+              :key="camera.deviceId"
+              :label="camera.label"
+              :value="camera"
+          />
+        </el-select>
+
+        <el-popover :width="fit - content" placement="top" trigger="hover">
+          <template #reference>
+            <div ref="statusIndicator" class="status-indicator"/>
+          </template>
+          <div>Connection Status: {{ connectionState }}</div>
+          <div>Signaling State: {{ signalingState }}</div>
+        </el-popover>
+
+      </div>
+
+      <br/>
+
+      <el-button v-if="connectionState !== 'connected'" type="primary" @click="start()">Restart</el-button>
+      <el-button v-if="connectionState === 'connected'" type="primary" @click="stop()">Stop Session</el-button>
     </div>
-
-    <el-select v-if="cameraList !== null && cameraList.length > 0" ref="cameraSelection" v-model="selectedCamera"
-               class="camera-selection" placeholder="Select" size="large">
-      <el-option
-          v-for="camera in cameraList"
-          :key="camera.deviceId"
-          :label="camera.label"
-          :value="camera"
-      />
-    </el-select>
-
-    <el-popover :width="fit - content" placement="top" trigger="hover">
-      <template #reference>
-        <div ref="statusIndicator" class="status-indicator"/>
-      </template>
-      <div>Connection Status: {{ connectionState }}</div>
-      <div>Signaling State: {{ signalingState }}</div>
-    </el-popover>
-
-    <br/>
-
-    <button id="start" @click="start()">Start</button>
-    <button id="stop" style="display: none" @click="stop()">Stop</button>
-
-    <h2>State</h2>
-    <p>ICE gathering state: <span id="iceGatheringState"></span></p>
-    <p>ICE connection state: <span id="iceConnectionState"></span></p>
-    <p>Signaling state: <span id="signalingState"></span></p>
-    <h2>Data channel</h2>
-    <pre ref="dataChannel" style="height: 200px"></pre>
-    <h2>SDP</h2>
-
-    <h3>Offer</h3>
-    <pre id="offerSdp"></pre>
-
-    <h3>Answer</h3>
-    <pre id="answerSdp"></pre>
   </div>
 </template>
 
 <style lang='scss'>
-.step-2-body {
+.step-1-body {
   display: flex;
   justify-content: center;
+}
+
+.privacy-consent-card {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.privacy-agreed-start-button {
+  width: 100%;
+}
+
+.step-2-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
 }
 
 #localVideo {
   width: 640px;
   height: 480px;
   object-fit: cover;
-  background: gray;
+  background: darkgrey url('/images/icon_video_camera_off_64.png') 50% 50% / 10% no-repeat;
+  border-radius: 8px;
 }
 
 .video-placeholder {
@@ -232,6 +233,12 @@ async function onCameraChange() {
   justify-content: center;
   align-items: center;
   background: gray;
+}
+
+.technical-infos {
+  width: 640px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .status-indicator {
