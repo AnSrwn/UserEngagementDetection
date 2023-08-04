@@ -4,16 +4,21 @@ export default class WebRTC {
 
     dataChannel = ref(null);
     localPeerConnection: RTCPeerConnection | undefined;
-    dc = null;
+
+    connectionState = ref();
+    signalingState = ref();
 
     // Template Refs
     videoElement = ref();
 
-    constructor(videoElement: globalThis.Ref<any>) {
+    constructor(videoElement: globalThis.Ref<any>, connectionState: globalThis.Ref<any>, signalingState: globalThis.Ref<any>) {
         this.config = useRuntimeConfig();
         this.stunServerUrl = this.config.public.stunServerUrl;
 
         this.localPeerConnection = undefined;
+
+        this.connectionState = connectionState;
+        this.signalingState = signalingState;
 
         this.videoElement = videoElement;
     }
@@ -30,38 +35,13 @@ export default class WebRTC {
         // @ts-ignore
         this.localPeerConnection = new RTCPeerConnection(config);
 
-        // register some listeners to help debugging
-        // const iceGatheringState = document.getElementById("iceGatheringState");
-        // localPeerConnection.addEventListener(
-        //     "icegatheringstatechange",
-        //     function () {
-        //         iceGatheringState.textContent +=
-        //             " -> " + localPeerConnection.iceGatheringState;
-        //     },
-        //     false
-        // );
-        // iceGatheringState.textContent = localPeerConnection.iceGatheringState;
+        this.localPeerConnection.addEventListener("iceconnectionstatechange", () => {
+            this.connectionState.value = this.localPeerConnection?.iceConnectionState;
+        }, false);
 
-        // const iceConnectionState = document.getElementById("iceConnectionState");
-        // localPeerConnection.addEventListener(
-        //     "iceconnectionstatechange",
-        //     function () {
-        //         iceConnectionState.textContent +=
-        //             " -> " + localPeerConnection.iceConnectionState;
-        //     },
-        //     false
-        // );
-        // iceConnectionState.textContent = localPeerConnection.iceConnectionState;
-
-        // const signalingState = document.getElementById("signalingState");
-        // localPeerConnection.addEventListener(
-        //     "signalingstatechange",
-        //     function () {
-        //         signalingState.textContent += " -> " + localPeerConnection.signalingState;
-        //     },
-        //     false
-        // );
-        // signalingState.textContent = localPeerConnection.signalingState;
+        this.localPeerConnection.addEventListener("signalingstatechange", () => {
+            this.signalingState.value = this.localPeerConnection?.signalingState;
+        }, false);
 
         // connect video
         this.localPeerConnection.addEventListener("track", (evt) => {
@@ -87,8 +67,6 @@ export default class WebRTC {
 
         console.debug("Offer:");
         console.debug(offer);
-        // const offerSdp = document.getElementById("offerSdp");
-        // offerSdp.textContent = offer.sdp;
 
         console.debug("Send offer");
         let {data: response, error} = await useApiFetch("offer", {
@@ -106,11 +84,30 @@ export default class WebRTC {
 
         console.debug("Received Answer:");
         console.debug(responseValue);
-        // const answerSdp = document.getElementById("answerSdp");
-        // answerSdp.textContent = responseValue.sdp;
+
         // @ts-ignore
         await this.localPeerConnection.setRemoteDescription(responseValue);
         console.debug(this.localPeerConnection)
+    }
+
+    stopConnection() {
+        // close transceivers
+        if (this.localPeerConnection === undefined) return;
+        if (this.localPeerConnection.getTransceivers) {
+            this.localPeerConnection.getTransceivers().forEach((transceiver) => {
+                if (transceiver.stop) {
+                    if (this.localPeerConnection === undefined) return;
+                    transceiver.stop();
+                }
+            });
+        }
+
+        // close peer connection
+        setTimeout(() => {
+            if (this.localPeerConnection === undefined) return;
+            this.localPeerConnection.close();
+            this.connectionState.value = "disconnected"
+        }, 500);
     }
 
     private async iceGatheringCompleted() {
@@ -132,24 +129,5 @@ export default class WebRTC {
                 this.localPeerConnection.addEventListener("icegatheringstatechange", checkState);
             }
         });
-    }
-
-    stopConnection() {
-        // close transceivers
-        if (this.localPeerConnection === undefined) return;
-        if (this.localPeerConnection.getTransceivers) {
-            this.localPeerConnection.getTransceivers().forEach((transceiver) => {
-                if (transceiver.stop) {
-                    if (this.localPeerConnection === undefined) return;
-                    transceiver.stop();
-                }
-            });
-        }
-
-        // close peer connection
-        setTimeout(() => {
-            if (this.localPeerConnection === undefined) return;
-            this.localPeerConnection.close();
-        }, 500);
     }
 }

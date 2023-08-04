@@ -12,11 +12,15 @@ let stream = null;
 let selectedCamera = ref(null);
 let cameraList = ref([]);
 
+let connectionState = ref("disconnected");
+let signalingState = ref("missing");
+
 // Template Refs
 let videoContainer = ref(null);
 let cameraSelection = ref(null);
+let statusIndicator = ref(null);
 
-let webRtc = new WebRTC(videoContainer);
+let webRtc = new WebRTC(videoContainer, connectionState, signalingState);
 
 watch(step, (newValue, oldValue) => {
       if (newValue === 2) {
@@ -28,6 +32,16 @@ watch(step, (newValue, oldValue) => {
 watch(selectedCamera, async (newValue, oldValue) => {
   if (oldValue !== null && newValue !== oldValue) {
     await onCameraChange();
+  }
+});
+
+watch(connectionState, (newValue, oldValue) => {
+  if (newValue === "checking") {
+    statusIndicator.value.style.backgroundColor = "yellow";
+  } else if (newValue === "connected") {
+    statusIndicator.value.style.backgroundColor = "green";
+  } else {
+    statusIndicator.value.style.backgroundColor = "red";
   }
 });
 
@@ -91,7 +105,7 @@ function getVideoTrack(stream) {
 async function start() {
   document.getElementById("start").style.display = "none";
 
- webRtc.createPeerConnection();
+  webRtc.createPeerConnection();
 
   try {
     stream = await getStream();
@@ -169,6 +183,14 @@ async function onCameraChange() {
       />
     </el-select>
 
+    <el-popover :width="fit - content" placement="top" trigger="hover">
+      <template #reference>
+        <div ref="statusIndicator" class="status-indicator"/>
+      </template>
+      <div>Connection Status: {{ connectionState }}</div>
+      <div>Signaling State: {{ signalingState }}</div>
+    </el-popover>
+
     <br/>
 
     <button id="start" @click="start()">Start</button>
@@ -210,5 +232,12 @@ async function onCameraChange() {
   justify-content: center;
   align-items: center;
   background: gray;
+}
+
+.status-indicator {
+  height: 10px;
+  width: 10px;
+  background-color: red;
+  border-radius: 50%;
 }
 </style>
