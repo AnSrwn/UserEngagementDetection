@@ -1,27 +1,13 @@
 <script setup>
 import {ref} from "vue";
+import WebRTC from "~/composables/WebRTC";
 
-// TODO: Selection of camera
-// TODO: Handling change of camera
-// TODO: Start and Stop buttons
-// TODO: Stop on page change
 
 const privacyAgreed = ref(false);
 let step = ref(1);
 
-// WebRTC
-const dataChannel = ref(null);
-
-// peer connection
-let localPeerConnection = null;
-
-// data channel
-const dc = null;
-
 let sender = null;
 let stream = null;
-const config = useRuntimeConfig();
-const stunServerUrl = config.public.stunServerUrl;
 
 let selectedCamera = ref(null);
 let cameraList = ref([]);
@@ -29,6 +15,8 @@ let cameraList = ref([]);
 // Template Refs
 let videoContainer = ref(null);
 let cameraSelection = ref(null);
+
+let webRtc = new WebRTC(videoContainer);
 
 watch(step, (newValue, oldValue) => {
       if (newValue === 2) {
@@ -50,116 +38,6 @@ onDeactivated(() => {
 onBeforeUnmount(() => {
   stop();
 })
-
-function createPeerConnection() {
-  const config = {
-    sdpSemantics: "unified-plan",
-  };
-
-  if (stunServerUrl && stunServerUrl.length > 0) {
-    config.iceServers = [{urls: [stunServerUrl]}];
-  }
-
-  localPeerConnection = new RTCPeerConnection(config);
-
-  // register some listeners to help debugging
-  const iceGatheringState = document.getElementById("iceGatheringState");
-  localPeerConnection.addEventListener(
-      "icegatheringstatechange",
-      function () {
-        iceGatheringState.textContent +=
-            " -> " + localPeerConnection.iceGatheringState;
-      },
-      false
-  );
-  iceGatheringState.textContent = localPeerConnection.iceGatheringState;
-
-  const iceConnectionState = document.getElementById("iceConnectionState");
-  localPeerConnection.addEventListener(
-      "iceconnectionstatechange",
-      function () {
-        iceConnectionState.textContent +=
-            " -> " + localPeerConnection.iceConnectionState;
-      },
-      false
-  );
-  iceConnectionState.textContent = localPeerConnection.iceConnectionState;
-
-  const signalingState = document.getElementById("signalingState");
-  localPeerConnection.addEventListener(
-      "signalingstatechange",
-      function () {
-        signalingState.textContent += " -> " + localPeerConnection.signalingState;
-      },
-      false
-  );
-  signalingState.textContent = localPeerConnection.signalingState;
-
-  // connect video
-  const videoElement = document.querySelector("video#localVideo");
-  localPeerConnection.addEventListener("track", function (evt) {
-    if (evt.track.kind === "video") videoElement.srcObject = evt.streams[0];
-  });
-
-  return localPeerConnection;
-}
-
-async function negotiate() {
-  const localDescription = await localPeerConnection.createOffer();
-  await localPeerConnection.setLocalDescription(localDescription);
-  console.debug("LocalDescription set");
-
-  // wait for ICE gathering to complete
-  await iceGatheringCompleted();
-
-  const offer = localPeerConnection.localDescription;
-
-  console.debug("Offer:");
-  console.debug(offer);
-  const offerSdp = document.getElementById("offerSdp");
-  offerSdp.textContent = offer.sdp;
-
-  console.debug("Send offer");
-  let {data: response, error} = await useApiFetch("offer", {
-    method: "POST",
-    body: offer,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (error.value) {
-    alert(error.value);
-  }
-
-  response = response.value;
-
-  console.debug("Received Answer:");
-  console.debug(response);
-  const answerSdp = document.getElementById("answerSdp");
-  answerSdp.textContent = response.sdp;
-  await localPeerConnection.setRemoteDescription(response);
-}
-
-async function iceGatheringCompleted() {
-  return new Promise(function (resolve) {
-    if (localPeerConnection.iceGatheringState === "complete") {
-      resolve();
-    } else {
-      function checkState() {
-        if (localPeerConnection.iceGatheringState === "complete") {
-          localPeerConnection.removeEventListener(
-              "icegatheringstatechange",
-              checkState
-          );
-          resolve();
-        }
-      }
-
-      localPeerConnection.addEventListener("icegatheringstatechange", checkState);
-    }
-  });
-}
 
 function getActiveCameraId(stream) {
   return stream.getVideoTracks()
@@ -213,15 +91,14 @@ function getVideoTrack(stream) {
 async function start() {
   document.getElementById("start").style.display = "none";
 
-  localPeerConnection = createPeerConnection();
+ webRtc.createPeerConnection();
 
   try {
     stream = await getStream();
     const track = getVideoTrack(stream);
 
     // TODO Maybe rescale track before sending it with WebRTC
-    sender = localPeerConnection.addTrack(track, stream)
-
+    sender = webRtc.localPeerConnection.addTrack(track, stream)
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
       console.error("enumerateDevices() not supported.");
@@ -230,8 +107,7 @@ async function start() {
       selectedCamera.value = getActiveCamera(stream);
     }
 
-    await negotiate();
-    console.debug(localPeerConnection);
+    await webRtc.negotiate();
   } catch (error) {
     console.error("Error opening video camera.", error);
   }
@@ -251,30 +127,15 @@ function stop() {
 
   videoContainer.value.srcObject = null;
 
-  // close data channel
-  if (dc) {
-    dc.close();
-  }
-
-  // close transceivers
-  if (localPeerConnection.getTransceivers) {
-    localPeerConnection.getTransceivers().forEach(function (transceiver) {
-      if (transceiver.stop) {
-        transceiver.stop();
-      }
-    });
-  }
-
-  // close peer connection
-  setTimeout(function () {
-    localPeerConnection.close();
-  }, 500);
+  webRtc.stopConnection()
 }
 
 async function onCameraChange() {
   stream = await getStream()
   const track = getVideoTrack(stream);
-  await sender.replaceTrack(track);
+  if (webRtc.localPeerConnection.iceConnectionState !== "closed") {
+    await sender.replaceTrack(track);
+  }
 }
 </script>
 
@@ -338,12 +199,13 @@ async function onCameraChange() {
 #localVideo {
   width: 640px;
   height: 480px;
+  object-fit: cover;
   background: gray;
 }
 
 .video-placeholder {
-  height: 480px;
   width: 640px;
+  height: 480px;
   display: flex;
   justify-content: center;
   align-items: center;
