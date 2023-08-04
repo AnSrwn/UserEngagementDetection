@@ -134,19 +134,37 @@ onBeforeUnmount(() => {
   gap: 30px 30px;
 }
 
-.bar-chart-container {
-  display: flex;
-  flex-direction: column;
-  gap: 30px 30px;
-}
-
 .engagement-card {
-  width: 500px;
+  max-width: 600px;
+  min-width: 400px;
+  flex-grow: 1;
   height: fit-content;
 }
 
+@media only screen and (max-width: 400px) {
+  .engagement-card {
+    min-width: 100%;
+  }
+}
+
+.bar-chart-container {
+  display: flex;
+  max-width: 600px;
+  min-width: 400px;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 30px 30px;
+  padding-bottom: 20px;
+}
+
+@media only screen and (max-width: 400px) {
+  .bar-chart-container {
+    min-width: 100%;
+  }
+}
+
 .bar-card {
-  width: 500px;
+  width: 100%;
   height: fit-content;
 
   .bar-chart {

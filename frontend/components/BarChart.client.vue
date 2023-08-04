@@ -52,13 +52,13 @@ function updateTooltip(data) {
   lowlyCount.value = data.low;
 
   highlyPercentage.value = Math.ceil(
-    (data.high / userCount) * 100
+      (data.high / userCount) * 100
   );
   midlyPercentage.value = Math.ceil(
-    (data.middle / userCount) * 100
+      (data.middle / userCount) * 100
   );
   lowlyPercentage.value = Math.ceil(
-    (data.low / userCount) * 100
+      (data.low / userCount) * 100
   );
 }
 
@@ -79,38 +79,38 @@ function onChartDivMounted() {
   // Handle new data
   onNewValue(props.data);
   watch(
-    () => props.data,
-    (newValue, oldValue) => {
-      onNewValue(newValue);
-    }
+      () => props.data,
+      (newValue, oldValue) => {
+        onNewValue(newValue);
+      }
   );
 }
 </script>
 
 <template>
-  <el-popover placement="top" :width="fit - content" trigger="hover">
+  <el-popover :width="fit - content" placement="top" trigger="hover">
     <template #reference>
-      <div @vue:mounted="onChartDivMounted" id="bar-chart">
+      <div id="bar-chart" @vue:mounted="onChartDivMounted">
         <div id="bar" ref="bar"></div>
       </div>
     </template>
     <div>
       <span
-        ><b>Highly {{ props.tooltipText }}:</b> {{ highlyPercentage }}% ({{
+      ><b>Highly {{ props.tooltipText }}:</b> {{ highlyPercentage }}% ({{
           highlyCount
         }}
         Users)</span
       >
-      <br />
+      <br/>
       <span
-        ><b>Maybe {{ props.tooltipText }}:</b> {{ midlyPercentage }}% ({{
+      ><b>Maybe {{ props.tooltipText }}:</b> {{ midlyPercentage }}% ({{
           midlyCount
         }}
         Users)</span
       >
-      <br />
+      <br/>
       <span
-        ><b>Lowly {{ props.tooltipText }}:</b> {{ lowlyPercentage }}% ({{
+      ><b>Lowly {{ props.tooltipText }}:</b> {{ lowlyPercentage }}% ({{
           lowlyCount
         }}
         Users)</span
@@ -121,10 +121,10 @@ function onChartDivMounted() {
 
 <style lang='scss'>
 #bar-chart {
+  width: 100%;
+  height: 80px;
   display: flex;
   flex-direction: column-reverse;
-  height: 80px;
-  width: 450px;
   background-color: #ddd;
   border-radius: 8px;
 }
