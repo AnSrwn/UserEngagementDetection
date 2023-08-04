@@ -38,7 +38,10 @@ class PredictionFrequency:
         self.prediction_frequency_task = task.LoopingCall(self.adjust_prediction_frequency)
         self.prediction_frequency_task.start(5.0)  # call every 5 seconds
 
-        reactor.run(installSignalHandlers=False)
+        try:
+            reactor.run(installSignalHandlers=False)
+        except Exception as e:
+            log.error(f"Reactor is already running: {e}")
 
     def create_thread(self):
         return Thread(target=self.run_prediction_frequency_loop)
