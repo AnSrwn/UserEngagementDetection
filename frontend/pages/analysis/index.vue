@@ -9,7 +9,7 @@ let boredomData = ref();
 let confusionData = ref();
 let frustrationData = ref();
 
-const {data, refresh} = await useApiFetch(`engagement/simple/`, {
+const {data, refresh} = await useApiFetch(`engagement/simple`, {
   query: {time_period: 5},
   transform: (data) => {
     numberOfUsers.value = data.users;

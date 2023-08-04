@@ -1,5 +1,5 @@
 export default class WebRTC {
-    config;
+    runtimeConfig;
     stunServerUrl;
 
     dataChannel = ref(null);
@@ -12,8 +12,8 @@ export default class WebRTC {
     videoElement = ref();
 
     constructor(videoElement: globalThis.Ref<any>, connectionState: globalThis.Ref<any>, signalingState: globalThis.Ref<any>) {
-        this.config = useRuntimeConfig();
-        this.stunServerUrl = this.config.public.stunServerUrl;
+        this.runtimeConfig = useRuntimeConfig();
+        this.stunServerUrl = this.runtimeConfig.public.stunServerUrl;
 
         this.localPeerConnection = undefined;
 
@@ -29,7 +29,8 @@ export default class WebRTC {
         };
 
         if (this.stunServerUrl && this.stunServerUrl.length > 0) {
-            this.config.iceServers = [{urls: [this.stunServerUrl]}];
+            // @ts-ignore
+            config.iceServers = [{urls: [this.stunServerUrl]}];
         }
 
         // @ts-ignore
