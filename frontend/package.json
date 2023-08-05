@@ -10,7 +10,8 @@
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
-    "@nuxt/types": "^2.17.1"
+    "@nuxt/types": "^2.17.1",
+    "@nuxtjs/i18n": "^8.0.0-rc.2"
   },
   "dependencies": {
     "@element-plus/nuxt": "^1.0.5",

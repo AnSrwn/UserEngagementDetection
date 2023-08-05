@@ -182,6 +182,7 @@ async function onCameraChange() {
 <template>
   <div>
     <h1>Detection</h1>
+    <div>{{$t('welcome')}}</div>
 
     <!-- Step 1 -->
     <div v-if="step === 1" class="step-1-body">

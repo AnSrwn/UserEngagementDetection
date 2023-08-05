@@ -16,10 +16,30 @@ export default defineNuxtConfig({
     "~/assets/styles/main.scss"
   ],
   modules: [
-    '@element-plus/nuxt'
+    '@element-plus/nuxt',
+    '@nuxtjs/i18n',
   ],
   elementPlus: {
     importStyle: 'scss',
+  },
+  i18n: {
+    vueI18n: './i18n.config.ts',
+    lazy: true,
+    langDir: 'locales',
+    strategy: "no_prefix",
+    locales: [
+        {
+          code: 'en',
+          name: 'English',
+          file: 'en.json'
+        },
+      {
+        code: 'de',
+        name: 'Deutsch',
+        file: 'de.json'
+      }
+    ],
+    defaultLocale: 'en',
   },
   vite: {
     css: {
