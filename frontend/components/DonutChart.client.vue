@@ -135,7 +135,7 @@ function updateChart(data) {
 </script>
 
 <template>
-  <el-popover placement="top" :width="fit - content" trigger="hover">
+  <el-popover class="tooltip" placement="top" trigger="hover">
     <template #reference>
       <div @vue:mounted="onChartDivMounted" v-bind:id="'donut_chart'"></div>
     </template>
@@ -165,4 +165,7 @@ function updateChart(data) {
 </template>
 
 <style lang='scss'>
+.tooltip {
+  width: fit-content;
+}
 </style>

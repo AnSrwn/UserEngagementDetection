@@ -186,7 +186,7 @@ async function onCameraChange() {
           />
         </el-select>
 
-        <el-popover :width="fit - content" placement="top" trigger="hover">
+        <el-popover class="tooltip" placement="top" trigger="hover">
           <template #reference>
             <div ref="statusIndicator" class="status-indicator"/>
           </template>
@@ -249,5 +249,9 @@ async function onCameraChange() {
   width: 10px;
   background-color: red;
   border-radius: 50%;
+}
+
+.tooltip {
+  width: fit-content;
 }
 </style>

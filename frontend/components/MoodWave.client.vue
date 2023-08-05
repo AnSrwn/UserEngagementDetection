@@ -108,7 +108,7 @@ function onChartDivMounted() {
 </script>
 
 <template>
-  <el-popover placement="top" :width="fit - content" trigger="hover">
+  <el-popover class="tooltip" placement="top" trigger="hover">
     <template #reference>
       <div @vue:mounted="onChartDivMounted" id="wave-chart">
         <div id="overall-mood"></div>
@@ -118,8 +118,6 @@ function onChartDivMounted() {
             class="waves-svg"
             viewBox="0 0 900 150"
             xmlns="http://www.w3.org/2000/svg"
-            xmlns:xlink="http://www.w3.org/1999/xlink"
-            version="1.1"
           >
             <path
               id="path-5"
@@ -206,5 +204,8 @@ function onChartDivMounted() {
   border: 1px solid black;
   clear: both;
   margin-right: 5px;
+}
+.tooltip {
+  width: fit-content;
 }
 </style>

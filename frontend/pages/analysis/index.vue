@@ -59,59 +59,61 @@ onBeforeUnmount(() => {
 <template>
   <div>
     <h1>Analysis</h1>
-    <el-card class="info-card">
-      <div class="large-text">{{ numberOfUsers }}</div>
-      <div>Users online</div>
-    </el-card>
-    <el-divider/>
-    <MoodWave v-if="numberOfUsers > 0" :data="allData"/>
-    <div class="charts-container">
-      <el-card class="engagement-card">
-        <template #header>
-          <h2>Engagement</h2>
-        </template>
-        <DonutChart v-if="numberOfUsers > 0" :data="engagementData"/>
-        <div v-else>There are no users online</div>
+    <client-only>
+      <el-card class="info-card">
+        <div class="large-text">{{ numberOfUsers }}</div>
+        <div>Users online</div>
       </el-card>
-      <div class="bar-chart-container">
-        <el-card class="bar-card">
+      <el-divider/>
+      <MoodWave v-if="numberOfUsers > 0" :data="allData"/>
+      <div class="charts-container">
+        <el-card class="engagement-card">
           <template #header>
-            <h2>Confusion</h2>
+            <h2>Engagement</h2>
           </template>
-          <BarChart
-              v-if="numberOfUsers > 0"
-              :data="confusionData"
-              class="bar-chart"
-              tooltipText="Confused"
-          />
+          <DonutChart v-if="numberOfUsers > 0" :data="engagementData"/>
           <div v-else>There are no users online</div>
         </el-card>
-        <el-card class="bar-card">
-          <template #header>
-            <h2>Boredom</h2>
-          </template>
-          <BarChart
-              v-if="numberOfUsers > 0"
-              :data="boredomData"
-              class="bar-chart"
-              tooltipText="Bored"
-          />
-          <div v-else>There are no users online</div>
-        </el-card>
-        <el-card class="bar-card">
-          <template #header>
-            <h2>Frustration</h2>
-          </template>
-          <BarChart
-              v-if="numberOfUsers > 0"
-              :data="frustrationData"
-              class="bar-chart"
-              tooltipText="Frustrated"
-          />
-          <div v-else>There are no users online</div>
-        </el-card>
+        <div class="bar-chart-container">
+          <el-card class="bar-card">
+            <template #header>
+              <h2>Confusion</h2>
+            </template>
+            <BarChart
+                v-if="numberOfUsers > 0"
+                :data="confusionData"
+                class="bar-chart"
+                tooltipText="Confused"
+            />
+            <div v-else>There are no users online</div>
+          </el-card>
+          <el-card class="bar-card">
+            <template #header>
+              <h2>Boredom</h2>
+            </template>
+            <BarChart
+                v-if="numberOfUsers > 0"
+                :data="boredomData"
+                class="bar-chart"
+                tooltipText="Bored"
+            />
+            <div v-else>There are no users online</div>
+          </el-card>
+          <el-card class="bar-card">
+            <template #header>
+              <h2>Frustration</h2>
+            </template>
+            <BarChart
+                v-if="numberOfUsers > 0"
+                :data="frustrationData"
+                class="bar-chart"
+                tooltipText="Frustrated"
+            />
+            <div v-else>There are no users online</div>
+          </el-card>
+        </div>
       </div>
-    </div>
+    </client-only>
   </div>
 </template>
 
