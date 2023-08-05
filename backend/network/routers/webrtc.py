@@ -8,7 +8,7 @@ from aiortc.contrib.media import MediaRelay
 from fastapi import APIRouter
 
 from common.prediction_frequency import PredictionFrequency
-from network.models.offer_request import OfferRequest
+from network.models.webrtc import OfferRequest
 from processing.engagement_detection import VideoTransformTrack
 
 log = logging.getLogger("uvicorn.debug")
