@@ -70,7 +70,7 @@ export default class WebRTC {
         console.debug(offer);
 
         console.debug("Send offer");
-        let {data: response, error} = await useApiFetch("offer", {
+        let {data: response, error} = await useApiFetch("webrtc/offer", {
             method: "POST", body: offer, headers: {
                 "Content-Type": "application/json",
             },

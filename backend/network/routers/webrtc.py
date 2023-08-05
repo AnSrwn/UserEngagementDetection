@@ -24,7 +24,7 @@ process_executor = concurrent.futures.ProcessPoolExecutor(mp_context=multiproces
 prediction_frequency = PredictionFrequency(process_executor)
 
 
-@router.post("/offer", response_model=RTCSessionDescription)
+@router.post("/webrtc/offer", response_model=RTCSessionDescription)
 async def offer(request: OfferRequest):
     """This endpoint is used to establish a WebRTC connection."""
     log.info(request)
