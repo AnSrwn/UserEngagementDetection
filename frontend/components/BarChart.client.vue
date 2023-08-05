@@ -88,7 +88,7 @@ function onChartDivMounted() {
 </script>
 
 <template>
-  <el-popover class="tooltip" placement="top" trigger="hover">
+  <el-popover class="tooltip" :width="300" placement="top" trigger="hover">
     <template #reference>
       <div id="bar-chart" @vue:mounted="onChartDivMounted">
         <div id="bar" ref="bar"></div>
@@ -132,9 +132,5 @@ function onChartDivMounted() {
   background-color: v-bind(barBackgroundColor);
   transition: all 2s ease;
   border-radius: 8px;
-}
-
-.tooltip {
-  width: fit-content;
 }
 </style>
