@@ -46,10 +46,12 @@ onMounted(() => {
 
 onDeactivated(() => {
   clearInterval(requestInterval);
+  stop();
 })
 
 onBeforeUnmount(() => {
   clearInterval(requestInterval);
+  stop();
 })
 
 watch(step, (newValue, oldValue) => {
@@ -76,14 +78,6 @@ watch(connectionState, (newValue, oldValue) => {
     refreshing();
   }
 });
-
-onDeactivated(() => {
-  stop();
-})
-
-onBeforeUnmount(() => {
-  stop();
-})
 
 function getActiveCameraId(stream) {
   return stream.getVideoTracks()
@@ -166,7 +160,9 @@ function stop() {
     });
   }
 
-  videoContainer.value.srcObject = null;
+  if (videoContainer.value) {
+    videoContainer.value.srcObject = null;
+  }
 
   webRtc.stopConnection()
 }
