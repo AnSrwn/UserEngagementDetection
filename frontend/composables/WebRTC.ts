@@ -45,11 +45,11 @@ export default class WebRTC {
         }, false);
 
         // connect video
-        this.localPeerConnection.addEventListener("track", (evt) => {
-            if (evt.track.kind === "video") { // @ts-ignore
-                this.videoElement.value.srcObject = evt.streams[0];
-            }
-        });
+        // this.localPeerConnection.addEventListener("track", (evt) => {
+        //     if (evt.track.kind === "video") { // @ts-ignore
+        //         this.videoElement.value.srcObject = evt.streams[0];
+        //     }
+        // });
 
         return this.localPeerConnection;
     }

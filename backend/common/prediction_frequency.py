@@ -19,7 +19,7 @@ class PredictionFrequency:
     thread = None
     prediction_frequency_task = None
     # Defines how often predictions are made. Every x frames.
-    prediction_frequency = 20
+    prediction_frequency = 10
     previous_process_count = 0
 
     def adjust_prediction_frequency(self):

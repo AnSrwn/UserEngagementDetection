@@ -9,6 +9,7 @@ let step = ref(1);
 let sender = null;
 let stream = null;
 
+let videoSrc = ref(null);
 let selectedCamera = ref(null);
 let cameraList = ref([]);
 
@@ -90,7 +91,7 @@ async function getStream() {
 function getVideoTrack(stream) {
   let constraints = {
     frameRate: {
-      ideal: 20.0
+      ideal: 10.0
     },
     facingMode: 'user', // use front camera on mobile devices
     width: {ideal: 1280},
@@ -107,9 +108,12 @@ async function start() {
 
   try {
     stream = await getStream();
-    const track = getVideoTrack(stream);
+    const trackForPredictions = getVideoTrack(stream, 10.0);
 
-    sender = webRtc.localPeerConnection.addTrack(track, stream)
+    // sending video stream to backend
+    sender = webRtc.localPeerConnection.addTrack(trackForPredictions, stream);
+    // display video stream in frontend
+    videoSrc.value = stream;
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
       console.error("enumerateDevices() not supported.");
@@ -138,10 +142,13 @@ function stop() {
 
 async function onCameraChange() {
   stream = await getStream()
-  const track = getVideoTrack(stream);
+  const trackForPredictions = getVideoTrack(stream);
   if (webRtc.localPeerConnection.iceConnectionState !== "closed") {
-    await sender.replaceTrack(track);
+    await sender.replaceTrack(trackForPredictions);
   }
+
+  // display video stream in frontend
+  videoSrc.value = stream;
 }
 </script>
 
@@ -158,13 +165,15 @@ async function onCameraChange() {
         </div>
         <el-checkbox v-model="privacyAgreed" label="I read and agree to the data privacy policy." size="large"/>
         <br/>
-        <el-button class="privacy-agreed-start-button" :disabled="privacyAgreed === false" type="primary" @click="step = 2">Start Session</el-button>
+        <el-button :disabled="privacyAgreed === false" class="privacy-agreed-start-button" type="primary"
+                   @click="step = 2">Start Session
+        </el-button>
       </el-card>
     </div>
 
     <!-- Step 2 -->
     <div v-if="step === 2" class="step-2-body">
-      <video id="localVideo" ref="videoContainer" autoplay playsinline preload="none"/>
+      <video id="localVideo" ref="videoContainer" :srcObject.prop="videoSrc" autoplay playsinline preload="none"/>
 
       <div class="technical-infos">
         <el-select v-if="cameraList !== null && cameraList.length > 0" ref="cameraSelection" v-model="selectedCamera"
