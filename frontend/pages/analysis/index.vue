@@ -2,7 +2,8 @@
 import {useApiFetch} from "~/composables/useApiFetch";
 
 let high = 0;
-let numberOfUsers = ref();
+let connectedUsers = ref();
+let visibleUsers = ref();
 let allData = ref();
 let engagementData = ref();
 let boredomData = ref();
@@ -12,7 +13,8 @@ let frustrationData = ref();
 const {data, refresh} = await useApiFetch(`engagement/simple`, {
   query: {time_period: 5},
   transform: (data) => {
-    numberOfUsers.value = data.users;
+    connectedUsers.value = data.connections;
+    visibleUsers.value = data.visible_users;
     allData = data;
     engagementData.value = data.engagement;
     boredomData.value = data.boredom;
@@ -60,18 +62,24 @@ onBeforeUnmount(() => {
   <div>
     <h1>Analysis</h1>
     <client-only>
-      <el-card class="info-card">
-        <div class="large-text">{{ numberOfUsers }}</div>
-        <div>Users online</div>
-      </el-card>
+      <div class="info-container">
+        <el-card class="info-card">
+          <div class="large-text">{{ connectedUsers }}</div>
+          <div>Connected Users</div>
+        </el-card>
+        <el-card class="info-card">
+          <div class="large-text">{{ visibleUsers }}</div>
+          <div>Visible Users</div>
+        </el-card>
+      </div>
       <el-divider/>
-      <MoodWave v-if="numberOfUsers > 0" :data="allData"/>
+      <MoodWave v-if="visibleUsers > 0" :data="allData"/>
       <div class="charts-container">
         <el-card class="engagement-card">
           <template #header>
             <h2>Engagement</h2>
           </template>
-          <DonutChart v-if="numberOfUsers > 0" :data="engagementData"/>
+          <DonutChart v-if="visibleUsers > 0" :data="engagementData"/>
           <div v-else>There are no users online</div>
         </el-card>
         <div class="bar-chart-container">
@@ -80,7 +88,7 @@ onBeforeUnmount(() => {
               <h2>Confusion</h2>
             </template>
             <BarChart
-                v-if="numberOfUsers > 0"
+                v-if="visibleUsers > 0"
                 :data="confusionData"
                 class="bar-chart"
                 tooltipText="Confused"
@@ -92,7 +100,7 @@ onBeforeUnmount(() => {
               <h2>Boredom</h2>
             </template>
             <BarChart
-                v-if="numberOfUsers > 0"
+                v-if="visibleUsers > 0"
                 :data="boredomData"
                 class="bar-chart"
                 tooltipText="Bored"
@@ -104,7 +112,7 @@ onBeforeUnmount(() => {
               <h2>Frustration</h2>
             </template>
             <BarChart
-                v-if="numberOfUsers > 0"
+                v-if="visibleUsers > 0"
                 :data="frustrationData"
                 class="bar-chart"
                 tooltipText="Frustrated"
@@ -118,6 +126,12 @@ onBeforeUnmount(() => {
 </template>
 
 <style lang='scss' scoped>
+.info-container{
+  display: flex;
+  flex-direction: row;
+  gap: 20px 20px;
+}
+
 .info-card {
   width: fit-content;
   height: fit-content;

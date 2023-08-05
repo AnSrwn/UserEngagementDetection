@@ -8,7 +8,8 @@ class EngagementDistribution(BaseModel):
 
 
 class EngagementSimple(BaseModel):
-    users: int = 0
+    connections: int = 0
+    visible_users: int = 0
     boredom: EngagementDistribution = EngagementDistribution()
     engagement: EngagementDistribution = EngagementDistribution()
     confusion: EngagementDistribution = EngagementDistribution()

@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import List
@@ -7,6 +8,9 @@ from fastapi import APIRouter
 from database.database_service import DatabaseService
 from database.models import Engagement
 from network.models.engagement import EngagementSimple
+from network.routers.webrtc import peerConnections
+
+log = logging.getLogger("uvicorn.debug")
 
 router = APIRouter()
 
@@ -56,7 +60,8 @@ with DatabaseService() as db_service:
 
     async def get_simple_engagement(average_per_client):
         simple_engagement = EngagementSimple()
-        simple_engagement.users = len(average_per_client)
+        simple_engagement.connections = len(peerConnections)
+        simple_engagement.visible_users = len(average_per_client)
         for key, value in average_per_client.items():
             await add_engagement_level(simple_engagement, value, EngagementType.BOREDOM)
             await add_engagement_level(simple_engagement, value, EngagementType.ENGAGEMENT)

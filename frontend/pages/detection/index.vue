@@ -43,10 +43,6 @@ watch(connectionState, (newValue, oldValue) => {
     statusIndicator.value.style.backgroundColor = "green";
   } else {
     statusIndicator.value.style.backgroundColor = "red";
-
-    if (oldValue === "connected") {
-      stop();
-    }
   }
 });
 
