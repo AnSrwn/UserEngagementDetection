@@ -38,6 +38,11 @@ def setEngagementLevel(avg: float) -> EngagementLevel:
 
 
 with DatabaseService() as db_service:
+    @router.get("/engagement/connections-count")
+    async def count_connections():
+        return len(peerConnections)
+
+
     @router.get("/engagement/raw", response_model=List[Engagement])
     async def list_engagement(from_datetime: datetime = None, to_datetime: datetime = None):
         return db_service.engagement.list_raw_by_datetime(from_datetime, to_datetime)

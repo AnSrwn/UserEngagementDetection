@@ -1,10 +1,13 @@
 <script setup>
 import {ref} from "vue";
 import WebRTC from "~/composables/WebRTC";
+import {useApiFetch} from "~/composables/useApiFetch";
 
 
 const privacyAgreed = ref(false);
 let step = ref(1);
+
+let connectedUsers = ref(0);
 
 let sender = null;
 let stream = null;
@@ -22,6 +25,32 @@ let cameraSelection = ref(null);
 let statusIndicator = ref(null);
 
 let webRtc = new WebRTC(videoContainer, connectionState, signalingState);
+
+const {data, refresh} = await useApiFetch(`engagement/connections-count`, {
+  transform: (data) => {
+    connectedUsers.value = data;
+    return data;
+  },
+});
+
+function refreshing() {
+  refresh();
+}
+
+let requestInterval;
+
+onMounted(() => {
+  refreshing();
+  requestInterval = setInterval(refreshing, 30000);
+})
+
+onDeactivated(() => {
+  clearInterval(requestInterval);
+})
+
+onBeforeUnmount(() => {
+  clearInterval(requestInterval);
+})
 
 watch(step, (newValue, oldValue) => {
       if (newValue === 2) {
@@ -41,8 +70,10 @@ watch(connectionState, (newValue, oldValue) => {
     statusIndicator.value.style.backgroundColor = "yellow";
   } else if (newValue === "connected") {
     statusIndicator.value.style.backgroundColor = "green";
+    refreshing();
   } else {
     statusIndicator.value.style.backgroundColor = "red";
+    refreshing();
   }
 });
 
@@ -192,6 +223,7 @@ async function onCameraChange() {
           </template>
           <div>Connection Status: {{ connectionState }}</div>
           <div>Signaling State: {{ signalingState }}</div>
+          <div>Connected Users: {{ connectedUsers }}</div>
         </el-popover>
 
       </div>
