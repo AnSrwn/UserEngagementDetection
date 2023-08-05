@@ -10,7 +10,7 @@ const language = computed({
 </script>
 
 <template>
-  <el-select v-model="language" placeholder="Select">
+  <el-select v-model="language" :placeholder="$t('general.select-placeholder')">
     <el-option
         v-for="item in locales"
         :key="item"

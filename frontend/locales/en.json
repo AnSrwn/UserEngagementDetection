@@ -1,3 +1,47 @@
 {
-  "welcome": "Welcome"
+  "welcome": "Welcome",
+  "general": {
+    "select-placeholder": "Select",
+    "user": "No one | {count} User | {count} Users"
+  },
+  "home": {
+    "title": "Home"
+  },
+  "detection": {
+    "title": "Detection",
+    "privacy-text-1": "Before using this application please read the ",
+    "privacy-text-2": "To continue, accept it by clicking on the checkbox.",
+    "privacy-text-link": "data privacy policy",
+    "privacy-checkbox-label": "I read and agree to the data privacy policy.",
+    "privacy-button": "Start Session",
+    "connection-status": "Connection Status",
+    "signaling-state": "Signaling State",
+    "connected-users": "Connected Users",
+    "session-restart-button": "Restart",
+    "session-stop-button": "Stop Session"
+  },
+  "analysis": {
+    "title": "Analysis",
+    "info-connected-users": "Connected Users",
+    "info-visible-users": "Visible Users",
+    "engagement": "Engagement",
+    "confusion": "Confusion",
+    "boredom": "Boredom",
+    "frustration": "Frustration",
+    "no-data": "No Data",
+    "tooltip-engaged": "Engaged",
+    "tooltip-confused": "Confused",
+    "tooltip-bored": "Bored",
+    "tooltip-frustrated": "Frustrated"
+  },
+  "charts": {
+    "highly": "Highly",
+    "maybe": "Maybe",
+    "lowly": "Lowly",
+    "positive-mood": "Positive Mood"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "text": "Hello there"
+  }
 }

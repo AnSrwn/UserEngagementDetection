@@ -4,8 +4,8 @@
 
 <template>
   <div>
-    <h1>Data Privacy</h1>
-    <p>Hello there</p>
+    <h1>{{ $t('privacy.title') }}</h1>
+    <p>{{ $t('privacy.text') }}</p>
   </div>
 </template>
 

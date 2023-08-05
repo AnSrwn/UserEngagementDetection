@@ -1,3 +1,47 @@
 {
-  "welcome": "Willkommen"
+  "welcome": "Willkommen",
+  "general": {
+    "select-placeholder": "Auswählen",
+    "user": "Niemand | {count} Nutzer | {count} Nutzer"
+  },
+  "home": {
+    "title": "Home"
+  },
+  "detection": {
+    "title": "Erkennung",
+    "privacy-text-1": "Bevor Nutzung der Anwendung, lesen Sie bitte die ",
+    "privacy-text-2": "Um fortzufahren, akzeptieren Sie die Datenschutzerklärung durch das Anklicken der Checkbox.",
+    "privacy-text-link": "Datenschutzerklärung",
+    "privacy-checkbox-label": "Ich habe die Datenschutzerklärung gelesen und akzeptiere diese.",
+    "privacy-button": "Session starten",
+    "connection-status": "Verbindungsstatus",
+    "signaling-state": "Signalstatus",
+    "connected-users": "Verbundene Nutzer",
+    "session-restart-button": "Neustart",
+    "session-stop-button": "Session stoppen"
+  },
+  "analysis": {
+    "title": "Analyse",
+    "info-connected-users": "Verbundene Nutzer",
+    "info-visible-users": "Erkannte Nutzer",
+    "engagement": "Engagement",
+    "confusion": "Verwirrung",
+    "boredom": "Langeweile",
+    "frustration": "Frustration",
+    "no-data": "Keine Daten vorhanden",
+    "tooltip-engaged": "engagiert",
+    "tooltip-confused": "verwirrt",
+    "tooltip-bored": "gelangweilt",
+    "tooltip-frustrated": "frustriert"
+  },
+  "charts": {
+    "highly": "Sehr",
+    "maybe": "Vielleicht",
+    "lowly": "Wenig",
+    "positive-mood": "Positive Stimmung"
+  },
+  "privacy": {
+    "title": "Datenschutzerklärung",
+    "text": "Test test"
+  }
 }

@@ -96,24 +96,21 @@ function onChartDivMounted() {
     </template>
     <div>
       <span
-      ><b>Highly {{ props.tooltipText }}:</b> {{ highlyPercentage }}% ({{
-          highlyCount
-        }}
-        Users)</span
+      ><b>{{ $t('charts.highly') }} {{ props.tooltipText }}:</b> {{
+          highlyPercentage
+        }}% ({{ $t('general.user', highlyCount) }})</span
       >
       <br/>
       <span
-      ><b>Maybe {{ props.tooltipText }}:</b> {{ midlyPercentage }}% ({{
-          midlyCount
-        }}
-        Users)</span
+      ><b>{{ $t('charts.maybe') }} {{ props.tooltipText }}:</b> {{
+          midlyPercentage
+        }}% ({{ $t('general.user', midlyCount) }})</span
       >
       <br/>
       <span
-      ><b>Lowly {{ props.tooltipText }}:</b> {{ lowlyPercentage }}% ({{
-          lowlyCount
-        }}
-        Users)</span
+      ><b>{{ $t('charts.lowly') }} {{ props.tooltipText }}:</b> {{
+          lowlyPercentage
+        }}% ({{ $t('general.user', lowlyCount) }})</span
       >
     </div>
   </el-popover>

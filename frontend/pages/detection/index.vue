@@ -181,20 +181,20 @@ async function onCameraChange() {
 
 <template>
   <div>
-    <h1>Detection</h1>
-    <div>{{$t('welcome')}}</div>
+    <h1>{{ $t('detection.title') }}</h1>
 
     <!-- Step 1 -->
     <div v-if="step === 1" class="step-1-body">
       <el-card class="privacy-consent-card">
-        <div>Before using this application please read the
-          <NuxtLink target="_blank" to="/privacy">data privacy policy</NuxtLink>
-          . To continue, accept it by clicking on the checkbox.
+        <div>{{ $t('detection.privacy-text-1') }}
+          <NuxtLink target="_blank" to="/privacy">{{ $t('detection.privacy-text-link') }}</NuxtLink>
+          .<br/>
+          {{ $t('detection.privacy-text-2') }}
         </div>
-        <el-checkbox v-model="privacyAgreed" label="I read and agree to the data privacy policy." size="large"/>
+        <el-checkbox v-model="privacyAgreed" :label="$t('detection.privacy-checkbox-label')" size="large"/>
         <br/>
         <el-button :disabled="privacyAgreed === false" class="privacy-agreed-start-button" type="primary"
-                   @click="step = 2">Start Session
+                   @click="step = 2">{{ $t('detection.privacy-button') }}
         </el-button>
       </el-card>
     </div>
@@ -205,7 +205,7 @@ async function onCameraChange() {
 
       <div class="technical-infos">
         <el-select v-if="cameraList !== null && cameraList.length > 0" ref="cameraSelection" v-model="selectedCamera"
-                   class="camera-selection" placeholder="Select" size="large">
+                   :placeholder="$t('general.select-placeholder')" class="camera-selection" size="large">
           <el-option
               v-for="camera in cameraList"
               :key="camera.deviceId"
@@ -218,17 +218,21 @@ async function onCameraChange() {
           <template #reference>
             <div ref="statusIndicator" class="status-indicator"/>
           </template>
-          <div>Connection Status: {{ connectionState }}</div>
-          <div>Signaling State: {{ signalingState }}</div>
-          <div>Connected Users: {{ connectedUsers }}</div>
+          <div>{{ $t('detection.connection-status') }}: {{ connectionState }}</div>
+          <div>{{ $t('detection.signaling-state') }}: {{ signalingState }}</div>
+          <div>{{ $t('detection.connected-users') }}: {{ connectedUsers }}</div>
         </el-popover>
 
       </div>
 
       <br/>
 
-      <el-button v-if="connectionState !== 'connected'" type="primary" @click="start()">Restart</el-button>
-      <el-button v-if="connectionState === 'connected'" type="primary" @click="stop()">Stop Session</el-button>
+      <el-button v-if="connectionState !== 'connected'" type="primary" @click="start()">
+        {{ $t('detection.session-restart-button') }}
+      </el-button>
+      <el-button v-if="connectionState === 'connected'" type="primary" @click="stop()">
+        {{ $t('detection.session-stop-button') }}
+      </el-button>
     </div>
   </div>
 </template>
@@ -241,7 +245,7 @@ async function onCameraChange() {
 
 .privacy-consent-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 460px;
   display: flex;
   flex-direction: column;
 }

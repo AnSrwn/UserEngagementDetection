@@ -30,7 +30,7 @@ function refreshing() {
   // numberOfUsers.value = 12 + high;
   // engagementData.value = { high: high, middle: 4, low: 2 };
   // confusionData.value = { high: 1, middle: high, low: 8 };
-  // boredomData.value = { high: 5, middle: 3, low: high };
+  // boredomData.value = { high: 1, middle: 0, low: 0 };
   // frustrationData.value = { high: 3, middle: 1, low: high };
   // allData.value = {
   //   users: numberOfUsers,
@@ -60,16 +60,16 @@ onBeforeUnmount(() => {
 
 <template>
   <div>
-    <h1>Analysis</h1>
+    <h1>{{ $t('analysis.title') }}</h1>
     <client-only>
       <div class="info-container">
         <el-card class="info-card">
           <div class="large-text">{{ connectedUsers }}</div>
-          <div>Connected Users</div>
+          <div>{{ $t('analysis.info-connected-users') }}</div>
         </el-card>
         <el-card class="info-card">
           <div class="large-text">{{ visibleUsers }}</div>
-          <div>Visible Users</div>
+          <div>{{ $t('analysis.info-visible-users') }}</div>
         </el-card>
       </div>
       <el-divider/>
@@ -77,47 +77,47 @@ onBeforeUnmount(() => {
       <div class="charts-container">
         <el-card class="engagement-card">
           <template #header>
-            <h2>Engagement</h2>
+            <h2>{{ $t('analysis.engagement') }}</h2>
           </template>
           <DonutChart v-if="visibleUsers > 0" :data="engagementData"/>
-          <div v-else>There are no users online</div>
+          <div v-else>{{ $t('analysis.no-data') }}</div>
         </el-card>
         <div class="bar-chart-container">
           <el-card class="bar-card">
             <template #header>
-              <h2>Confusion</h2>
+              <h2>{{ $t('analysis.confusion') }}</h2>
             </template>
             <BarChart
                 v-if="visibleUsers > 0"
                 :data="confusionData"
                 class="bar-chart"
-                tooltipText="Confused"
+                :tooltipText="$t('analysis.tooltip-confused')"
             />
-            <div v-else>There are no users online</div>
+            <div v-else>{{ $t('analysis.no-data') }}</div>
           </el-card>
           <el-card class="bar-card">
             <template #header>
-              <h2>Boredom</h2>
+              <h2>{{ $t('analysis.boredom') }}</h2>
             </template>
             <BarChart
                 v-if="visibleUsers > 0"
                 :data="boredomData"
                 class="bar-chart"
-                tooltipText="Bored"
+                :tooltipText="$t('analysis.tooltip-bored')"
             />
-            <div v-else>There are no users online</div>
+            <div v-else>{{ $t('analysis.no-data') }}</div>
           </el-card>
           <el-card class="bar-card">
             <template #header>
-              <h2>Frustration</h2>
+              <h2>{{ $t('analysis.frustration') }}</h2>
             </template>
             <BarChart
                 v-if="visibleUsers > 0"
                 :data="frustrationData"
                 class="bar-chart"
-                tooltipText="Frustrated"
+                :tooltipText="$t('analysis.tooltip-frustrated')"
             />
-            <div v-else>There are no users online</div>
+            <div v-else>{{ $t('analysis.no-data') }}</div>
           </el-card>
         </div>
       </div>

@@ -154,7 +154,7 @@ function onChartDivMounted() {
           class="color-box"
           :style="{ 'background-color': overallMoodColor }"
         ></div>
-        <b>Positive Mood:</b> {{ overallMoodPercentage }}%
+        <b>{{ $t('charts.positive-mood') }}:</b> {{ overallMoodPercentage }}%
       </div>
       <hr />
       <div>
@@ -162,28 +162,28 @@ function onChartDivMounted() {
           class="color-box"
           :style="{ 'background-color': engagementColor }"
         ></div>
-        <b>Engaged:</b> {{ engagementPercentage }}%
+        <b>{{ ($t('analysis.tooltip-engaged')).charAt(0).toUpperCase() + ($t('analysis.tooltip-engaged')).slice(1) }}:</b> {{ engagementPercentage }}%
       </div>
       <div>
         <div
           class="color-box"
           :style="{ 'background-color': boredomColor }"
         ></div>
-        <b>Bored:</b> {{ boredomPercentage }}%
+        <b>{{ ($t('analysis.tooltip-bored')).charAt(0).toUpperCase() + ($t('analysis.tooltip-bored')).slice(1) }}:</b> {{ boredomPercentage }}%
       </div>
       <div>
         <div
           class="color-box"
           :style="{ 'background-color': confusionColor }"
         ></div>
-        <b>Confused:</b> {{ confusionPercentage }}%
+        <b>{{ ($t('analysis.tooltip-confused')).charAt(0).toUpperCase() + ($t('analysis.tooltip-confused')).slice(1) }}:</b> {{ confusionPercentage }}%
       </div>
       <div>
         <div
           class="color-box"
           :style="{ 'background-color': frustrationColor }"
         ></div>
-        <b>Frustrated:</b>
+        <b>{{ ($t('analysis.tooltip-frustrated')).charAt(0).toUpperCase() + ($t('analysis.tooltip-frustrated')).slice(1) }}:</b>
         {{ frustrationPercentage }}%
       </div>
     </div>

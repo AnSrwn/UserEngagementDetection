@@ -10,13 +10,13 @@ const localePath = useLocalePath()
         mode="horizontal"
     >
       <el-menu-item index="1">
-        <NuxtLink :to="localePath('/')">Home</NuxtLink>
+        <NuxtLink :to="localePath('/')">{{$t('home.title')}}</NuxtLink>
       </el-menu-item>
       <el-menu-item index="2">
-        <NuxtLink :to="localePath('/detection')">Detection</NuxtLink>
+        <NuxtLink :to="localePath('/detection')">{{$t('detection.title')}}</NuxtLink>
       </el-menu-item>
       <el-menu-item index="3">
-        <NuxtLink :to="localePath('/analysis')">Analysis</NuxtLink>
+        <NuxtLink :to="localePath('/analysis')">{{$t('analysis.title')}}</NuxtLink>
       </el-menu-item>
 <!--      <div class="flex-grow"/>-->
       <el-menu-item index="4">
