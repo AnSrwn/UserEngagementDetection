@@ -10,8 +10,7 @@
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
-    "@nuxt/types": "^2.17.1",
-    "@nuxtjs/i18n": "^8.0.0-rc.2"
+    "@nuxt/types": "^2.17.1"
   },
   "dependencies": {
     "@element-plus/nuxt": "^1.0.5",
@@ -21,6 +20,7 @@
     "nuxt": "^3.5.2",
     "sass": "^1.63.3",
     "uuid": "^9.0.0",
-    "vue-chartjs": "^5.2.0"
+    "vue-chartjs": "^5.2.0",
+    "@nuxtjs/i18n": "^8.0.0-rc.2"
   }
 }
