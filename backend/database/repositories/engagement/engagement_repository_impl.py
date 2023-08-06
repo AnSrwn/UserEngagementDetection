@@ -28,4 +28,5 @@ class EngagementRepository(GenericSqlRepository[Engagement], EngagementRepositor
     def deleteAll(self) -> int:
         statement = delete(self._model_cls)
         result = self._session.exec(statement)
+        self._session.commit()
         return result.rowcount
