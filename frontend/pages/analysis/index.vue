@@ -59,9 +59,16 @@ const getAvgEngagement = async () => {
     },
   });
 
+  // Remove expired data
+  let earliestFromDatetime = new Date(((new Date()).getTime() - timePeriod.value * 60000));
+  let earliestFromIsoDatetime = new Date(earliestFromDatetime.toISOString().slice(0, -1))
+  let filtered = avgEngagement.value.filter((item) => item.from_datetime.getTime() > earliestFromIsoDatetime.getTime())
+
   if (data.value !== null && data.value[0].from_datetime !== null) {
-    avgEngagement.value = avgEngagement.value.concat(data.value);
+    filtered = filtered.concat(data.value);
   }
+
+  avgEngagement.value = filtered
 }
 
 function refreshing() {
