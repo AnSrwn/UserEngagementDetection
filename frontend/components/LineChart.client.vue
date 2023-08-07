@@ -19,31 +19,12 @@ let y = null;
 let xAxis = null;
 let yAxis = null;
 
-let chartData = ref([]);
-
 const props = defineProps({
   data: Array,
 });
 
 function onNewValue(newValue) {
-  if (newValue === null) newValue = Array();
-
-  // chartData.value = chartData.value.concat(newValue);
-
-  // console.log(chartData.value)
-
-  console.log(newValue)
-  // let test = toDeepRaw(newValue)
-  // chartData.value = chartData.value.concat(newValue);
-  chartData.value = newValue
-  // console.log(chartData.value)
-
-  // chartData.value.push({ from_datetime: "2023-08-06T09:02:00.113867", avg_engagement: 32.49})
-  // chartData.value.push({ from_datetime: "2023-08-06T09:02:05.113867", avg_engagement: 62.49})
-  // chartData.value.push({ from_datetime: "2023-08-06T09:02:10.113867", avg_engagement: 12.49})
-  // console.log(chartData.value)
-
-  updateChart(chartData.value)
+  updateChart(newValue)
 }
 
 function onChartDivMounted() {

@@ -1,5 +1,6 @@
 <script setup>
 import {useApiFetch} from "~/composables/useApiFetch";
+import {toAvgPeriodEngagementClientItem} from "~/composables/serverToClient";
 
 let high = 0;
 let connectedUsers = ref();
@@ -13,81 +14,65 @@ let frustrationData = ref();
 let avgEngagement = ref([]);
 let timePeriod = ref(30); // minutes
 
-let avgPeriodEngagementParams = () => {
-  let earliestFromDatetime = new Date(((new Date()).getTime() - timePeriod.value * 60000));
-  let fromDatetime = earliestFromDatetime.toISOString();
-  let toDatetime = (new Date()).toISOString();
+const getSimpleEngagement = async () => {
+  const {data} = await useApiFetch(`engagement/average/simple`, {
+    query: {interval: 5}
+  });
 
-  return {from_datetime: fromDatetime, to_datetime: toDatetime, interval: 5}
+  if (data.value !== null) {
+    allData = data.value;
+
+    connectedUsers.value = data.value.connections;
+    visibleUsers.value = data.value.visible_users;
+
+    engagementData.value = data.value.engagement;
+    boredomData.value = data.value.boredom;
+    confusionData.value = data.value.confusion;
+    frustrationData.value = data.value.frustration;
+  }
 }
 
-const {data: simpleEngagement, refresh: refreshSimpleEngagement} = await useApiFetch(`engagement/average/simple`, {
-  query: {interval: 5},
-  transform: (data) => {
-    connectedUsers.value = data.connections;
-    visibleUsers.value = data.visible_users;
-    allData = data;
-    engagementData.value = data.engagement;
-    boredomData.value = data.boredom;
-    confusionData.value = data.confusion;
-    frustrationData.value = data.frustration;
-
-    return data;
-  },
-});
-
 const getAvgPeriodEngagement = async () => {
+  let avgPeriodEngagementParams = () => {
+    let earliestFromDatetime = new Date(((new Date()).getTime() - timePeriod.value * 60000));
+    let fromDatetime = earliestFromDatetime.toISOString();
+    let toDatetime = (new Date()).toISOString();
+
+    return {from_datetime: fromDatetime, to_datetime: toDatetime, interval: 5}
+  }
+
   const {data} = await useApiFetch('engagement/average/percentage/period', {
     query: avgPeriodEngagementParams(),
     transform: (data) => {
-      return data.map((item) => ({
-        from_datetime: new Date(item.from_datetime),
-        to_datetime: new Date(item.to_datetime),
-        avg_boredom: Number(item.avg_boredom.toFixed(2)),
-        avg_engagement: Number(item.avg_engagement.toFixed(2)),
-        avg_confusion: Number(item.avg_confusion.toFixed(2)),
-        avg_frustration: Number(item.avg_frustration.toFixed(2)),
-      }));
+      return data.map((item) => toAvgPeriodEngagementClientItem(item));
     }
-  })
+  });
 
-  avgEngagement.value = [];
-  avgEngagement.value = avgEngagement.value.concat(data.value);
+  avgEngagement.value = data.value;
 }
 
-const {
-  data: avgEngagementData,
-  refresh: refreshAvgEngagement
-} = await useApiFetch(`engagement/average/percentage`, {
-  query: {interval: 5},
-  transform: (data) => {
+const getAvgEngagement = async () => {
+  const {data} = await useApiFetch(`engagement/average/percentage`, {
+    query: {interval: 5},
+    transform: (data) => {
+      return data.map((item) => toAvgPeriodEngagementClientItem(item));
+    },
+  });
 
-    if (data[0].from_datetime !== null) {
-      let test = data.map((item) => ({
-        from_datetime: new Date(item.from_datetime),
-        to_datetime: new Date(item.to_datetime),
-        avg_boredom: Number(item.avg_boredom.toFixed(2)),
-        avg_engagement: Number(item.avg_engagement.toFixed(2)),
-        avg_confusion: Number(item.avg_confusion.toFixed(2)),
-        avg_frustration: Number(item.avg_frustration.toFixed(2)),
-      }));
-
-      avgEngagement.value = avgEngagement.value.concat(test);
-    }
-
-    return data;
-  },
-});
+  if (data.value !== null && data.value[0].from_datetime !== null) {
+    avgEngagement.value = avgEngagement.value.concat(data.value);
+  }
+}
 
 function refreshing() {
-  refreshSimpleEngagement();
-  refreshAvgEngagement();
+  getSimpleEngagement();
+  getAvgEngagement();
 }
 
 let requestInterval;
 
 onMounted(async () => {
-  refreshing();
+  await fetchOnMount(getSimpleEngagement);
   await fetchOnMount(getAvgPeriodEngagement);
   requestInterval = setInterval(refreshing, 5000);
 })
