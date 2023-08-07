@@ -1,11 +1,14 @@
 <script setup>
 import {useApiFetch} from "~/composables/useApiFetch";
 import {toTimelineEngagementClientItem} from "~/composables/serverToClient";
+import {CircleCloseFilled, Setting} from '@element-plus/icons-vue'
 
-const CURRENT_INTERVAL = 5;
-const TIMELINE_INTERVAL = 60;
+
+const currentIntervalSeconds = ref(5);
+const timelineIntervalSeconds = ref(60);
 
 const openCollapseViews = ref([])
+const settingsVisible = ref(false);
 
 let connectedUsers = ref();
 let visibleUsers = ref();
@@ -22,11 +25,15 @@ let timelineBoredom = ref([]);
 let timelineConfusion = ref([]);
 let timelineFrustration = ref([]);
 
-let timePeriod = ref(30); // minutes
+let timelinePeriod = ref(30); // minutes
 
 const getCurrentEngagement = async () => {
+  let params = () => {
+    return {interval: currentIntervalSeconds.value}
+  }
+
   const {data} = await useApiFetch(`engagement/average/simple`, {
-    query: {interval: CURRENT_INTERVAL}
+    query: params()
   });
 
   if (data.value !== null) {
@@ -44,11 +51,11 @@ const getCurrentEngagement = async () => {
 
 const getTimelinePeriodEngagement = async () => {
   let params = () => {
-    let earliestFromDatetime = new Date(((new Date()).getTime() - timePeriod.value * 60000));
+    let earliestFromDatetime = new Date(((new Date()).getTime() - timelinePeriod.value * 60000));
     let fromDatetime = earliestFromDatetime.toISOString();
     let toDatetime = (new Date()).toISOString();
 
-    return {from_datetime: fromDatetime, to_datetime: toDatetime, interval: TIMELINE_INTERVAL}
+    return {from_datetime: fromDatetime, to_datetime: toDatetime, interval: timelineIntervalSeconds.value}
   }
 
   const {data} = await useApiFetch('engagement/average/percentage/period', {
@@ -62,15 +69,19 @@ const getTimelinePeriodEngagement = async () => {
 }
 
 const getTimelinePointEngagement = async () => {
+  let params = () => {
+    return {interval: timelineIntervalSeconds.value}
+  }
+
   const {data} = await useApiFetch(`engagement/average/percentage`, {
-    query: {interval: TIMELINE_INTERVAL},
+    query: params(),
     transform: (data) => {
       return data.map((item) => toTimelineEngagementClientItem(item));
     },
   });
 
   // Remove expired data
-  let earliestFromDatetime = new Date(((new Date()).getTime() - timePeriod.value * 60000));
+  let earliestFromDatetime = new Date(((new Date()).getTime() - timelinePeriod.value * 60000));
   let filtered = timelineAllData.value.filter((item) => item.from_datetime.getTime() > earliestFromDatetime.getTime())
 
   if (data.value !== null && data.value[0].from_datetime !== null) {
@@ -103,8 +114,8 @@ let timelineInterval
 onMounted(async () => {
   await fetchOnMount(getCurrentEngagement);
   await fetchOnMount(getTimelinePeriodEngagement);
-  currentInterval = setInterval(getCurrentEngagement, CURRENT_INTERVAL * 1000);
-  timelineInterval = setInterval(getTimelinePointEngagement, TIMELINE_INTERVAL * 1000);
+  currentInterval = setInterval(getCurrentEngagement, currentIntervalSeconds.value * 1000);
+  timelineInterval = setInterval(getTimelinePointEngagement, timelineIntervalSeconds.value * 1000);
 })
 
 onDeactivated(() => {
@@ -116,12 +127,61 @@ onBeforeUnmount(() => {
   clearInterval(currentInterval);
   clearInterval(timelineInterval);
 })
+
+function onCurrentIntervalSecondsChange() {
+  clearInterval(currentInterval);
+  currentInterval = setInterval(getCurrentEngagement, currentIntervalSeconds.value * 1000);
+}
+
+function onTimelineIntervalSecondsChange() {
+  clearInterval(timelineInterval);
+  timelineInterval = setInterval(getTimelinePointEngagement, timelineIntervalSeconds.value * 1000);
+}
 </script>
 
 <template>
   <div>
-    <h1>{{ $t('analysis.title') }}</h1>
+    <div class="headline">
+      <h1>{{ $t('analysis.title') }}</h1>
+      <el-button :icon="Setting" type="primary" @click="settingsVisible = true">{{
+          $t('analysis.settings')
+        }}
+      </el-button>
+    </div>
     <client-only>
+      <el-drawer v-model="settingsVisible" :show-close="false">
+        <template #header="{ close, titleId, titleClass }">
+          <h2>{{ $t('analysis.settings') }}</h2>
+          <el-button type="danger" @click="close">
+            <el-icon class="el-icon--left">
+              <CircleCloseFilled/>
+            </el-icon>
+            {{ $t('general.close') }}
+          </el-button>
+        </template>
+        Refresh Interval for live data (in seconds):
+        <el-input-number
+            v-model="currentIntervalSeconds"
+            :min="3"
+            :max="300"
+            @change="onCurrentIntervalSecondsChange"
+        />
+        <br />
+        Refresh Interval for timeline data (in seconds):
+        <el-input-number
+            v-model="timelineIntervalSeconds"
+            :min="10"
+            :max="300"
+            @change="onTimelineIntervalSecondsChange"
+        />
+        <br />
+        Timeline complete period (in minutes):
+        <el-input-number
+            v-model="timelinePeriod"
+            :min="15"
+            :max="120"
+        />
+      </el-drawer>
       <div class="info-container">
         <el-card class="info-card">
           <div class="large-text">{{ connectedUsers }}</div>
@@ -141,7 +201,7 @@ onBeforeUnmount(() => {
           </template>
           <DonutChart v-if="visibleUsers > 0" :data="currentEngagement"/>
           <div v-else>{{ $t('analysis.no-data') }}</div>
-          <el-collapse class="collapse-view" v-model="openCollapseViews">
+          <el-collapse v-model="openCollapseViews" class="collapse-view">
             <el-collapse-item name="timelineEngagement">
               <template #title>
                 <h3>{{ $t('analysis.timeline-title') }}</h3>
@@ -162,7 +222,7 @@ onBeforeUnmount(() => {
                 class="bar-chart"
             />
             <div v-else>{{ $t('analysis.no-data') }}</div>
-            <el-collapse class="collapse-view" v-model="openCollapseViews">
+            <el-collapse v-model="openCollapseViews" class="collapse-view">
               <el-collapse-item name="timelineConfusion">
                 <template #title>
                   <h3>{{ $t('analysis.timeline-title') }}</h3>
@@ -182,7 +242,7 @@ onBeforeUnmount(() => {
                 class="bar-chart"
             />
             <div v-else>{{ $t('analysis.no-data') }}</div>
-            <el-collapse class="collapse-view" v-model="openCollapseViews">
+            <el-collapse v-model="openCollapseViews" class="collapse-view">
               <el-collapse-item name="timelineBoredom">
                 <template #title>
                   <h3>{{ $t('analysis.timeline-title') }}</h3>
@@ -202,7 +262,7 @@ onBeforeUnmount(() => {
                 class="bar-chart"
             />
             <div v-else>{{ $t('analysis.no-data') }}</div>
-            <el-collapse class="collapse-view" v-model="openCollapseViews">
+            <el-collapse v-model="openCollapseViews" class="collapse-view">
               <el-collapse-item name="timelineFrustration">
                 <template #title>
                   <h3>{{ $t('analysis.timeline-title') }}</h3>
@@ -218,6 +278,13 @@ onBeforeUnmount(() => {
 </template>
 
 <style lang='scss' scoped>
+.headline {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
 .info-container {
   display: flex;
   flex-direction: row;

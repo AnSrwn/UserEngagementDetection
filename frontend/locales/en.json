@@ -2,6 +2,7 @@
   "welcome": "Welcome",
   "general": {
     "select-placeholder": "Select",
+    "close": "Close",
     "user": "No one | {count} User | {count} Users"
   },
   "home": {
@@ -22,6 +23,7 @@
   },
   "analysis": {
     "title": "Analysis",
+    "settings": "Settings",
     "info-connected-users": "Connected Users",
     "info-visible-users": "Visible Users",
     "engagement": "Engagement",
