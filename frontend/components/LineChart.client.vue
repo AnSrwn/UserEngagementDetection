@@ -33,7 +33,7 @@ function onChartDivMounted() {
   // Initialise an X axis:
   const format = timeFormat("%H:%M");
   x = scaleUtc().range([0, width]);
-  xAxis = axisBottom().scale(x).tickFormat(format);
+  xAxis = axisBottom().scale(x).tickFormat(format).ticks(4);
   svg
       .append("g")
       .attr("transform", "translate(0," + height + ")")
@@ -41,7 +41,7 @@ function onChartDivMounted() {
 
   // Initialize an Y axis
   y = scaleLinear().range([height, 0]);
-  yAxis = axisLeft().scale(y);
+  yAxis = axisLeft().scale(y).ticks(4);
   svg.append("g").attr("class", `yAxis`);
 
   updateChart(props.data);
