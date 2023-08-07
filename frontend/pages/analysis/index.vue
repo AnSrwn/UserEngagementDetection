@@ -10,8 +10,19 @@ let boredomData = ref();
 let confusionData = ref();
 let frustrationData = ref();
 
-const {data, refresh} = await useApiFetch(`engagement/simple`, {
-  query: {time_period: 5},
+let avgEngagement = ref([]);
+let timePeriod = ref(30); // minutes
+
+let avgPeriodEngagementParams = () => {
+  let earliestFromDatetime = new Date(((new Date()).getTime() - timePeriod.value * 60000));
+  let fromDatetime = earliestFromDatetime.toISOString();
+  let toDatetime = (new Date()).toISOString();
+
+  return {from_datetime: fromDatetime, to_datetime: toDatetime, interval: 5}
+}
+
+const {data: simpleEngagement, refresh: refreshSimpleEngagement} = await useApiFetch(`engagement/average/simple`, {
+  query: {interval: 5},
   transform: (data) => {
     connectedUsers.value = data.connections;
     visibleUsers.value = data.visible_users;
@@ -25,27 +36,59 @@ const {data, refresh} = await useApiFetch(`engagement/simple`, {
   },
 });
 
+const getAvgPeriodEngagement = async () => {
+  const {data} = await useApiFetch('engagement/average/percentage/period', {
+    query: avgPeriodEngagementParams(),
+    transform: (data) => {
+      return data.map((item) => ({
+        from_datetime: new Date(item.from_datetime),
+        to_datetime: new Date(item.to_datetime),
+        avg_boredom: Number(item.avg_boredom.toFixed(2)),
+        avg_engagement: Number(item.avg_engagement.toFixed(2)),
+        avg_confusion: Number(item.avg_confusion.toFixed(2)),
+        avg_frustration: Number(item.avg_frustration.toFixed(2)),
+      }));
+    }
+  })
+
+  avgEngagement.value = [];
+  avgEngagement.value = avgEngagement.value.concat(data.value);
+}
+
+const {
+  data: avgEngagementData,
+  refresh: refreshAvgEngagement
+} = await useApiFetch(`engagement/average/percentage`, {
+  query: {interval: 5},
+  transform: (data) => {
+
+    if (data[0].from_datetime !== null) {
+      let test = data.map((item) => ({
+        from_datetime: new Date(item.from_datetime),
+        to_datetime: new Date(item.to_datetime),
+        avg_boredom: Number(item.avg_boredom.toFixed(2)),
+        avg_engagement: Number(item.avg_engagement.toFixed(2)),
+        avg_confusion: Number(item.avg_confusion.toFixed(2)),
+        avg_frustration: Number(item.avg_frustration.toFixed(2)),
+      }));
+
+      avgEngagement.value = avgEngagement.value.concat(test);
+    }
+
+    return data;
+  },
+});
+
 function refreshing() {
-  // high++;
-  // numberOfUsers.value = 12 + high;
-  // engagementData.value = { high: high, middle: 4, low: 2 };
-  // confusionData.value = { high: 1, middle: high, low: 8 };
-  // boredomData.value = { high: 1, middle: 0, low: 0 };
-  // frustrationData.value = { high: 3, middle: 1, low: high };
-  // allData.value = {
-  //   users: numberOfUsers,
-  //   engagement: engagementData,
-  //   boredom: boredomData,
-  //   confusion: confusionData,
-  //   frustration: frustrationData,
-  // };
-  refresh();
+  refreshSimpleEngagement();
+  refreshAvgEngagement();
 }
 
 let requestInterval;
 
-onMounted(() => {
+onMounted(async () => {
   refreshing();
+  await fetchOnMount(getAvgPeriodEngagement);
   requestInterval = setInterval(refreshing, 5000);
 })
 
@@ -81,6 +124,8 @@ onBeforeUnmount(() => {
           </template>
           <DonutChart v-if="visibleUsers > 0" :data="engagementData"/>
           <div v-else>{{ $t('analysis.no-data') }}</div>
+          <el-divider/>
+          <LineChart v-if="avgEngagement.length > 0" :data="avgEngagement"/>
         </el-card>
         <div class="bar-chart-container">
           <el-card class="bar-card">
@@ -90,8 +135,8 @@ onBeforeUnmount(() => {
             <BarChart
                 v-if="visibleUsers > 0"
                 :data="confusionData"
-                class="bar-chart"
                 :tooltipText="$t('analysis.tooltip-confused')"
+                class="bar-chart"
             />
             <div v-else>{{ $t('analysis.no-data') }}</div>
           </el-card>
@@ -102,8 +147,8 @@ onBeforeUnmount(() => {
             <BarChart
                 v-if="visibleUsers > 0"
                 :data="boredomData"
-                class="bar-chart"
                 :tooltipText="$t('analysis.tooltip-bored')"
+                class="bar-chart"
             />
             <div v-else>{{ $t('analysis.no-data') }}</div>
           </el-card>
@@ -114,8 +159,8 @@ onBeforeUnmount(() => {
             <BarChart
                 v-if="visibleUsers > 0"
                 :data="frustrationData"
-                class="bar-chart"
                 :tooltipText="$t('analysis.tooltip-frustrated')"
+                class="bar-chart"
             />
             <div v-else>{{ $t('analysis.no-data') }}</div>
           </el-card>
@@ -126,7 +171,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style lang='scss' scoped>
-.info-container{
+.info-container {
   display: flex;
   flex-direction: row;
   gap: 20px 20px;

@@ -29,7 +29,7 @@ class PredictionFrequency:
             self.prediction_frequency += process_count
 
         if (self.previous_process_count < 10) & (process_count < 10):
-            self.prediction_frequency = 20
+            self.prediction_frequency = 10
 
         self.previous_process_count = process_count
         # log.info(f"Processes in queue: {process_count} | Prediction Frequency: {self.prediction_frequency}")

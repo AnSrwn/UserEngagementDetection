@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -14,3 +17,12 @@ class EngagementSimple(BaseModel):
     engagement: EngagementDistribution = EngagementDistribution()
     confusion: EngagementDistribution = EngagementDistribution()
     frustration: EngagementDistribution = EngagementDistribution()
+
+
+class EngagementIntervalAverage(BaseModel):
+    from_datetime: Optional[datetime]
+    to_datetime: Optional[datetime]
+    avg_boredom: float = 0.0
+    avg_engagement: float = 0.0
+    avg_confusion: float = 0.0
+    avg_frustration: float = 0.0
