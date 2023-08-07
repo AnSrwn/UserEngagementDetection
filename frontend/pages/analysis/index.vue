@@ -5,6 +5,8 @@ import {toTimelineEngagementClientItem} from "~/composables/serverToClient";
 const CURRENT_INTERVAL = 5;
 const TIMELINE_INTERVAL = 60;
 
+const openCollapseViews = ref([])
+
 let connectedUsers = ref();
 let visibleUsers = ref();
 
@@ -139,8 +141,14 @@ onBeforeUnmount(() => {
           </template>
           <DonutChart v-if="visibleUsers > 0" :data="currentEngagement"/>
           <div v-else>{{ $t('analysis.no-data') }}</div>
-          <el-divider/>
-          <LineChart v-if="timelineEngagement.length > 0" :data="timelineEngagement"/>
+          <el-collapse class="collapse-view" v-model="openCollapseViews">
+            <el-collapse-item name="timelineEngagement">
+              <template #title>
+                <h3>{{ $t('analysis.timeline-title') }}</h3>
+              </template>
+              <LineChart v-if="timelineEngagement.length > 0" :data="timelineEngagement"/>
+            </el-collapse-item>
+          </el-collapse>
         </el-card>
         <div class="bar-chart-container">
           <el-card class="bar-card">
@@ -154,8 +162,14 @@ onBeforeUnmount(() => {
                 class="bar-chart"
             />
             <div v-else>{{ $t('analysis.no-data') }}</div>
-            <el-divider/>
-            <LineChart v-if="timelineConfusion.length > 0" :data="timelineConfusion"/>
+            <el-collapse class="collapse-view" v-model="openCollapseViews">
+              <el-collapse-item name="timelineConfusion">
+                <template #title>
+                  <h3>{{ $t('analysis.timeline-title') }}</h3>
+                </template>
+                <LineChart v-if="timelineConfusion.length > 0" :data="timelineConfusion"/>
+              </el-collapse-item>
+            </el-collapse>
           </el-card>
           <el-card class="bar-card">
             <template #header>
@@ -168,8 +182,14 @@ onBeforeUnmount(() => {
                 class="bar-chart"
             />
             <div v-else>{{ $t('analysis.no-data') }}</div>
-            <el-divider/>
-            <LineChart v-if="timelineBoredom.length > 0" :data="timelineBoredom"/>
+            <el-collapse class="collapse-view" v-model="openCollapseViews">
+              <el-collapse-item name="timelineBoredom">
+                <template #title>
+                  <h3>{{ $t('analysis.timeline-title') }}</h3>
+                </template>
+                <LineChart v-if="timelineBoredom.length > 0" :data="timelineBoredom"/>
+              </el-collapse-item>
+            </el-collapse>
           </el-card>
           <el-card class="bar-card">
             <template #header>
@@ -182,8 +202,14 @@ onBeforeUnmount(() => {
                 class="bar-chart"
             />
             <div v-else>{{ $t('analysis.no-data') }}</div>
-            <el-divider/>
-            <LineChart v-if="timelineFrustration.length > 0" :data="timelineFrustration"/>
+            <el-collapse class="collapse-view" v-model="openCollapseViews">
+              <el-collapse-item name="timelineFrustration">
+                <template #title>
+                  <h3>{{ $t('analysis.timeline-title') }}</h3>
+                </template>
+                <LineChart v-if="timelineFrustration.length > 0" :data="timelineFrustration"/>
+              </el-collapse-item>
+            </el-collapse>
           </el-card>
         </div>
       </div>
@@ -214,6 +240,10 @@ onBeforeUnmount(() => {
   flex-direction: row;
   height: 500px;
   gap: 30px 30px;
+}
+
+.collapse-view {
+  margin-top: 20px;
 }
 
 .engagement-card {

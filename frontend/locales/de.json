@@ -32,7 +32,8 @@
     "tooltip-engaged": "engagiert",
     "tooltip-confused": "verwirrt",
     "tooltip-bored": "gelangweilt",
-    "tooltip-frustrated": "frustriert"
+    "tooltip-frustrated": "frustriert",
+    "timeline-title": "Zeitstrahl"
   },
   "charts": {
     "highly": "Sehr",

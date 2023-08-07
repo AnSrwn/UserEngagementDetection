@@ -32,7 +32,8 @@
     "tooltip-engaged": "Engaged",
     "tooltip-confused": "Confused",
     "tooltip-bored": "Bored",
-    "tooltip-frustrated": "Frustrated"
+    "tooltip-frustrated": "Frustrated",
+    "timeline-title": "Timeline"
   },
   "charts": {
     "highly": "Highly",
