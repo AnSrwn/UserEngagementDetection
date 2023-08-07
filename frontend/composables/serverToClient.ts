@@ -1,6 +1,6 @@
 import {toLocaleUtc} from "~/composables/useUtils";
 
-export function toAvgPeriodEngagementClientItem(item: {
+export function toTimelineEngagementClientItem(item: {
     from_datetime: string | number | Date;
     to_datetime: string | number | Date;
     avg_boredom: number;
