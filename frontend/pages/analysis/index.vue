@@ -2,14 +2,17 @@
 import {useApiFetch} from "~/composables/useApiFetch";
 import {toTimelineEngagementClientItem} from "~/composables/serverToClient";
 
-let high = 0;
+const CURRENT_INTERVAL = 5;
+const TIMELINE_INTERVAL = 60;
+
 let connectedUsers = ref();
 let visibleUsers = ref();
-let allData = ref();
-let engagementData = ref();
-let boredomData = ref();
-let confusionData = ref();
-let frustrationData = ref();
+
+let currentAllData = ref();
+let currentEngagement = ref();
+let currentBoredom = ref();
+let currentConfusion = ref();
+let currentFrustration = ref();
 
 let timelineAllData = ref([]);
 let timelineEngagement = ref([]);
@@ -19,21 +22,21 @@ let timelineFrustration = ref([]);
 
 let timePeriod = ref(30); // minutes
 
-const getSimpleEngagement = async () => {
+const getCurrentEngagement = async () => {
   const {data} = await useApiFetch(`engagement/average/simple`, {
-    query: {interval: 5}
+    query: {interval: CURRENT_INTERVAL}
   });
 
   if (data.value !== null) {
-    allData = data.value;
+    currentAllData = data.value;
 
     connectedUsers.value = data.value.connections;
     visibleUsers.value = data.value.visible_users;
 
-    engagementData.value = data.value.engagement;
-    boredomData.value = data.value.boredom;
-    confusionData.value = data.value.confusion;
-    frustrationData.value = data.value.frustration;
+    currentEngagement.value = data.value.engagement;
+    currentBoredom.value = data.value.boredom;
+    currentConfusion.value = data.value.confusion;
+    currentFrustration.value = data.value.frustration;
   }
 }
 
@@ -43,7 +46,7 @@ const getTimelinePeriodEngagement = async () => {
     let fromDatetime = earliestFromDatetime.toISOString();
     let toDatetime = (new Date()).toISOString();
 
-    return {from_datetime: fromDatetime, to_datetime: toDatetime, interval: 5}
+    return {from_datetime: fromDatetime, to_datetime: toDatetime, interval: TIMELINE_INTERVAL}
   }
 
   const {data} = await useApiFetch('engagement/average/percentage/period', {
@@ -53,6 +56,29 @@ const getTimelinePeriodEngagement = async () => {
     }
   });
 
+  setTimelineData(data);
+}
+
+const getTimelinePointEngagement = async () => {
+  const {data} = await useApiFetch(`engagement/average/percentage`, {
+    query: {interval: TIMELINE_INTERVAL},
+    transform: (data) => {
+      return data.map((item) => toTimelineEngagementClientItem(item));
+    },
+  });
+
+  // Remove expired data
+  let earliestFromDatetime = new Date(((new Date()).getTime() - timePeriod.value * 60000));
+  let filtered = timelineAllData.value.filter((item) => item.from_datetime.getTime() > earliestFromDatetime.getTime())
+
+  if (data.value !== null && data.value[0].from_datetime !== null) {
+    filtered = filtered.concat(data.value);
+  }
+
+  setTimelineData(filtered);
+}
+
+function setTimelineData(data) {
   timelineAllData.value = data.value;
   timelineEngagement.value = data.value.map(item => {
     return {time: item.from_datetime, percentage: item.avg_engagement}
@@ -68,56 +94,25 @@ const getTimelinePeriodEngagement = async () => {
   });
 }
 
-const getTimelinePointEngagement = async () => {
-  const {data} = await useApiFetch(`engagement/average/percentage`, {
-    query: {interval: 5},
-    transform: (data) => {
-      return data.map((item) => toTimelineEngagementClientItem(item));
-    },
-  });
 
-  // Remove expired data
-  let earliestFromDatetime = new Date(((new Date()).getTime() - timePeriod.value * 60000));
-  let filtered = timelineAllData.value.filter((item) => item.from_datetime.getTime() > earliestFromDatetime.getTime())
-
-  if (data.value !== null && data.value[0].from_datetime !== null) {
-    filtered = filtered.concat(data.value);
-  }
-
-  timelineAllData.value = filtered
-  timelineEngagement.value = filtered.map(item => {
-    return {time: item.from_datetime, percentage: item.avg_engagement}
-  });
-  timelineBoredom.value = filtered.map(item => {
-    return {time: item.from_datetime, percentage: item.avg_boredom}
-  });
-  timelineConfusion.value = filtered.map(item => {
-    return {time: item.from_datetime, percentage: item.avg_confusion}
-  });
-  timelineFrustration.value = filtered.map(item => {
-    return {time: item.from_datetime, percentage: item.avg_frustration}
-  });
-}
-
-function refreshing() {
-  getSimpleEngagement();
-  getTimelinePointEngagement();
-}
-
-let requestInterval;
+let currentInterval;
+let timelineInterval
 
 onMounted(async () => {
-  await fetchOnMount(getSimpleEngagement);
+  await fetchOnMount(getCurrentEngagement);
   await fetchOnMount(getTimelinePeriodEngagement);
-  requestInterval = setInterval(refreshing, 5000);
+  currentInterval = setInterval(getCurrentEngagement, CURRENT_INTERVAL * 1000);
+  timelineInterval = setInterval(getTimelinePointEngagement, TIMELINE_INTERVAL * 1000);
 })
 
 onDeactivated(() => {
-  clearInterval(requestInterval);
+  clearInterval(currentInterval);
+  clearInterval(timelineInterval);
 })
 
 onBeforeUnmount(() => {
-  clearInterval(requestInterval);
+  clearInterval(currentInterval);
+  clearInterval(timelineInterval);
 })
 </script>
 
@@ -136,13 +131,13 @@ onBeforeUnmount(() => {
         </el-card>
       </div>
       <el-divider/>
-      <MoodWave v-if="visibleUsers > 0" :data="allData"/>
+      <MoodWave v-if="visibleUsers > 0" :data="currentAllData"/>
       <div class="charts-container">
         <el-card class="engagement-card">
           <template #header>
             <h2>{{ $t('analysis.engagement') }}</h2>
           </template>
-          <DonutChart v-if="visibleUsers > 0" :data="engagementData"/>
+          <DonutChart v-if="visibleUsers > 0" :data="currentEngagement"/>
           <div v-else>{{ $t('analysis.no-data') }}</div>
           <el-divider/>
           <LineChart v-if="timelineEngagement.length > 0" :data="timelineEngagement"/>
@@ -154,7 +149,7 @@ onBeforeUnmount(() => {
             </template>
             <BarChart
                 v-if="visibleUsers > 0"
-                :data="confusionData"
+                :data="currentConfusion"
                 :tooltipText="$t('analysis.tooltip-confused')"
                 class="bar-chart"
             />
@@ -168,7 +163,7 @@ onBeforeUnmount(() => {
             </template>
             <BarChart
                 v-if="visibleUsers > 0"
-                :data="boredomData"
+                :data="currentBoredom"
                 :tooltipText="$t('analysis.tooltip-bored')"
                 class="bar-chart"
             />
@@ -182,7 +177,7 @@ onBeforeUnmount(() => {
             </template>
             <BarChart
                 v-if="visibleUsers > 0"
-                :data="frustrationData"
+                :data="currentFrustration"
                 :tooltipText="$t('analysis.tooltip-frustrated')"
                 class="bar-chart"
             />
