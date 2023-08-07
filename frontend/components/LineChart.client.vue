@@ -1,7 +1,7 @@
 <!-- Composition API -->
 <script setup>
 import {scaleLinear, scaleUtc} from "d3-scale";
-import {line} from "d3-shape";
+import {line, curveMonotoneX} from "d3-shape";
 import {axisBottom, axisLeft} from "d3-axis";
 import {timeFormat} from "d3-time-format";
 import {select} from "d3-selection";
@@ -78,12 +78,14 @@ function updateChart(data) {
       .attr(
           "d",
           line()
+              // .defined((d) => d.from_datetime !== null)
               .x((d) => x(d.from_datetime))
               .y((d) => y(d.avg_engagement))
+              .curve(curveMonotoneX)
       )
-      .attr("fill", "none")
-      .attr("stroke", "steelblue")
-      .attr("stroke-width", 1.5);
+      .attr("fill", "none") // black
+      .attr("stroke", "black")
+      .attr("stroke-width", 2.5);
 }
 </script>
 
