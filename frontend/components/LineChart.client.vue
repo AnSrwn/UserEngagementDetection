@@ -9,7 +9,7 @@ import {extent} from "d3-array";
 import { v4 as uuidv4 } from "uuid";
 
 const margin = {top: 10, right: 30, bottom: 30, left: 50};
-const width = 460 - margin.left - margin.right;
+const width = 500 - margin.left - margin.right;
 const height = 250 - margin.top - margin.bottom;
 
 let svg = null;

@@ -238,6 +238,7 @@ onBeforeUnmount(() => {
   display: flex;
   flex-wrap: wrap;
   flex-direction: row;
+  justify-content: space-between;
   height: 500px;
   gap: 30px 30px;
 }
@@ -247,7 +248,7 @@ onBeforeUnmount(() => {
 }
 
 .engagement-card {
-  max-width: 600px;
+  max-width: 560px;
   min-width: 400px;
   flex-grow: 1;
   height: fit-content;
@@ -262,7 +263,7 @@ onBeforeUnmount(() => {
 
 .bar-chart-container {
   display: flex;
-  max-width: 600px;
+  max-width: 560px;
   min-width: 400px;
   flex-direction: column;
   flex-grow: 1;
