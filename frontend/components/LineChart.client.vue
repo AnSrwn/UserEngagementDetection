@@ -1,13 +1,11 @@
 <!-- Composition API -->
 <script setup>
 import {scaleLinear, scaleUtc} from "d3-scale";
-import {transition} from "d3-transition";
 import {line} from "d3-shape";
 import {axisBottom, axisLeft} from "d3-axis";
 import {timeFormat} from "d3-time-format";
 import {select} from "d3-selection";
 import {extent} from "d3-array";
-import {ref} from "vue";
 
 const margin = {top: 10, right: 30, bottom: 30, left: 50};
 const width = 460 - margin.left - margin.right;
@@ -23,10 +21,6 @@ const props = defineProps({
   data: Array,
 });
 
-function onNewValue(newValue) {
-  updateChart(newValue)
-}
-
 function onChartDivMounted() {
   // append the svg object to the body of the page
   svg = select(`#line-chart`)
@@ -37,7 +31,7 @@ function onChartDivMounted() {
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   // Initialise an X axis:
-  const format = timeFormat("%X");
+  const format = timeFormat("%H:%M");
   x = scaleUtc().range([0, width]);
   xAxis = axisBottom().scale(x).tickFormat(format);
   svg
@@ -50,11 +44,13 @@ function onChartDivMounted() {
   yAxis = axisLeft().scale(y);
   svg.append("g").attr("class", `yAxis`);
 
-  onNewValue(props.data)
+  updateChart(props.data);
   watch(
       () => props.data,
       (newValue, oldValue) => {
-        onNewValue(newValue);
+        if (newValue.length !== oldValue.length) {
+          updateChart(newValue)
+        }
       }
   );
 }
@@ -68,19 +64,6 @@ function updateChart(data) {
   y.domain([0, 100]);
   svg.selectAll(`.yAxis`).transition().duration(500).call(yAxis);
 
-  // svg.append("path")
-  //     .datum(data).attr("fill", "none")
-  //     .attr("stroke", "steelblue")
-  //     .attr("stroke-width", 1.5)
-  //     .attr("d", line()
-  //         .x(function (d) {
-  //           return x(d.from_datetime)
-  //         })
-  //         .y(function (d) {
-  //           return y(d.avg_engagement)
-  //         })
-  //     )
-
   // Create an update selection: bind to the new data
   const u = svg.selectAll(`.line`).data([data], (d) => d.from_datetime);
 
@@ -89,8 +72,9 @@ function updateChart(data) {
       .append("path")
       .attr("class", `line`)
       .merge(u)
-      .transition()
-      .duration(1000)
+      // .transition()
+      // .ease(easeSin)
+      // .duration(1000)
       .attr(
           "d",
           line()
