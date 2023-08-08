@@ -37,6 +37,13 @@
     "tooltip-frustrated": "Frustrated",
     "timeline-title": "Timeline"
   },
+  "settings": {
+    "timeline-title": "Timeline",
+    "live-data-title": "Live Data",
+    "live-data-refresh-interval-label": "Refresh Interval (in seconds):",
+    "timeline-refresh-interval-label": "Refresh Interval (in seconds):",
+    "timeline-period-label": "Maximum period of timeline (in minutes):"
+  },
   "charts": {
     "highly": "Highly",
     "maybe": "Maybe",

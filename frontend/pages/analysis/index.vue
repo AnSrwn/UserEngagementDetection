@@ -131,11 +131,17 @@ onBeforeUnmount(() => {
 function onCurrentIntervalSecondsChange() {
   clearInterval(currentInterval);
   currentInterval = setInterval(getCurrentEngagement, currentIntervalSeconds.value * 1000);
+  getCurrentEngagement();
 }
 
 function onTimelineIntervalSecondsChange() {
   clearInterval(timelineInterval);
   timelineInterval = setInterval(getTimelinePointEngagement, timelineIntervalSeconds.value * 1000);
+  getTimelinePeriodEngagement();
+}
+
+function onTimelinePeriodChange() {
+  getTimelinePeriodEngagement();
 }
 </script>
 
@@ -149,7 +155,7 @@ function onTimelineIntervalSecondsChange() {
       </el-button>
     </div>
     <client-only>
-      <el-drawer v-model="settingsVisible" :show-close="false">
+      <el-drawer v-model="settingsVisible" :size="400" :show-close="false">
         <template #header="{ close, titleId, titleClass }">
           <h2>{{ $t('analysis.settings') }}</h2>
           <el-button type="danger" @click="close">
@@ -159,27 +165,28 @@ function onTimelineIntervalSecondsChange() {
             {{ $t('general.close') }}
           </el-button>
         </template>
-        Refresh Interval for live data (in seconds):
+        <h3>{{ $t('settings.live-data-title') }}</h3>
+        <h4>{{ $t('settings.live-data-refresh-interval-label') }}</h4>
         <el-input-number
             v-model="currentIntervalSeconds"
-            :min="3"
             :max="300"
+            :min="3"
             @change="onCurrentIntervalSecondsChange"
         />
-        <br />
-        Refresh Interval for timeline data (in seconds):
+        <h3>{{ $t('settings.timeline-title') }}</h3>
+        <h4>{{ $t('settings.timeline-refresh-interval-label') }}</h4>
         <el-input-number
             v-model="timelineIntervalSeconds"
-            :min="10"
             :max="300"
+            :min="10"
             @change="onTimelineIntervalSecondsChange"
         />
-        <br />
-        Timeline complete period (in minutes):
+        <h4>{{ $t('settings.timeline-period-label') }}</h4>
         <el-input-number
             v-model="timelinePeriod"
-            :min="15"
             :max="120"
+            :min="15"
+            @change="onTimelinePeriodChange"
         />
       </el-drawer>
       <div class="info-container">

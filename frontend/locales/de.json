@@ -37,6 +37,13 @@
     "tooltip-frustrated": "frustriert",
     "timeline-title": "Zeitstrahl"
   },
+  "settings": {
+    "timeline-title": "Zeitstrahl",
+    "live-data-title": "Live Data",
+    "live-data-refresh-interval-label": "Aktualisierungsinterval (in Sekunden):",
+    "timeline-refresh-interval-label": "Aktualisierungsinterval (in Sekunden):",
+    "timeline-period-label": "Maximaler Zeitraum des Zeitstrahls (in Minuten):"
+  },
   "charts": {
     "highly": "Sehr",
     "maybe": "Vielleicht",
