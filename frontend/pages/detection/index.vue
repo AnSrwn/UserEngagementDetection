@@ -266,8 +266,12 @@ async function onCameraChange() {
   max-width: 640px;
   aspect-ratio: 4 / 3;
   object-fit: cover;
-  background: darkgrey url('/images/icon_video_camera_off_64.png') 50% 50% / 10% no-repeat;
+  background: darkgrey url('/images/icon_video_camera_off_mirrored_64.png') 50% 50% / 10% no-repeat;
   border-radius: 8px;
+}
+
+video {
+  transform: scale(-1,1);
 }
 
 .technical-infos {
