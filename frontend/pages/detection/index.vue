@@ -24,7 +24,9 @@ let videoContainer = ref(null);
 let cameraSelection = ref(null);
 let statusIndicator = ref(null);
 
-let webRtc = new WebRTC(videoContainer, connectionState, signalingState);
+let webRtc = new WebRTC(videoContainer, connectionState, signalingState, () => {
+  stop();
+});
 
 const {data, refresh} = await useApiFetch(`engagement/connections-count`, {
   transform: (data) => {
@@ -214,7 +216,7 @@ async function onCameraChange() {
           />
         </el-select>
 
-        <el-popover class="tooltip" :width="230" placement="top" trigger="hover">
+        <el-popover :width="230" class="tooltip" placement="top" trigger="hover">
           <template #reference>
             <div ref="statusIndicator" class="status-indicator"/>
           </template>
@@ -271,7 +273,7 @@ async function onCameraChange() {
 }
 
 video {
-  transform: scale(-1,1);
+  transform: scale(-1, 1);
 }
 
 .technical-infos {

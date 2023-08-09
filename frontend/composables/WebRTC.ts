@@ -2,7 +2,6 @@ export default class WebRTC {
     runtimeConfig;
     stunServerUrl;
 
-    dataChannel = ref(null);
     localPeerConnection: RTCPeerConnection | undefined;
 
     connectionState = ref();
@@ -11,7 +10,9 @@ export default class WebRTC {
     // Template Refs
     videoElement = ref();
 
-    constructor(videoElement: globalThis.Ref<any>, connectionState: globalThis.Ref<any>, signalingState: globalThis.Ref<any>) {
+    onDisconnected: () => void;
+
+    constructor(videoElement: globalThis.Ref<any>, connectionState: globalThis.Ref<any>, signalingState: globalThis.Ref<any>, onDisconnected: () => void) {
         this.runtimeConfig = useRuntimeConfig();
         this.stunServerUrl = this.runtimeConfig.public.stunServerUrl;
 
@@ -21,6 +22,7 @@ export default class WebRTC {
         this.signalingState = signalingState;
 
         this.videoElement = videoElement;
+        this.onDisconnected = onDisconnected;
     }
 
     createPeerConnection() {
@@ -38,6 +40,11 @@ export default class WebRTC {
 
         this.localPeerConnection.addEventListener("iceconnectionstatechange", () => {
             this.connectionState.value = this.localPeerConnection?.iceConnectionState;
+
+            // in case the connection stops unexpectedly
+            if (this.connectionState.value === "disconnected") {
+                this.onDisconnected();
+            }
         }, false);
 
         this.localPeerConnection.addEventListener("signalingstatechange", () => {
