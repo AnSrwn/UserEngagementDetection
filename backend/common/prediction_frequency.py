@@ -24,16 +24,19 @@ class PredictionFrequency:
     previous_process_count = 0
 
     def adjust_prediction_frequency(self):
-        process_count = len(self.executor._pending_work_items)
+        try:
+            process_count = len(self.executor._pending_work_items)
 
-        if (self.previous_process_count > 10) & (process_count > 10):
-            self.prediction_frequency += process_count
+            if (self.previous_process_count > 10) & (process_count > self.previous_process_count):
+                self.prediction_frequency += process_count
 
-        if (self.previous_process_count < 10) & (process_count < 10):
-            self.prediction_frequency = self.prediction_frequency_default
+            if (self.previous_process_count < 10) & (process_count < 10):
+                self.prediction_frequency = self.prediction_frequency_default
 
-        self.previous_process_count = process_count
-        log.info(f"Processes in queue: {process_count} | Prediction Frequency: {self.prediction_frequency}")
+            self.previous_process_count = process_count
+            log.info(f"Processes in queue: {process_count} | Prediction Frequency: {self.prediction_frequency}")
+        except Exception as e:
+            log.error(f"adjust_prediction_frequency: {e}")
 
     def run_prediction_frequency_loop(self):
         self.prediction_frequency_task = task.LoopingCall(self.adjust_prediction_frequency)
