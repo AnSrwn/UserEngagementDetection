@@ -223,6 +223,8 @@ function onTimelinePeriodChange() {
 
       <div v-if="connectedUsers > 0 && !isCurrentDataEmpty" class="visualization-container">
 
+        <MoodBoard :currentData="currentAllData"/>
+
         <el-badge :style="{visibility: currentDataOutdated ? 'visible' : 'hidden'}"
                   :value="$t('analysis.old-data-badge')" class="old-data-badge"
                   type="warning"/>
