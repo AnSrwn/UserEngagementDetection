@@ -50,7 +50,7 @@ const getCurrentEngagement = async () => {
       return
     }
 
-    currentAllData = data.value;
+    currentAllData.value = data.value;
     currentEngagement.value = data.value.engagement;
     currentBoredom.value = data.value.boredom;
     currentConfusion.value = data.value.confusion;
