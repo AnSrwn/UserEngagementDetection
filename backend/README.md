@@ -18,3 +18,4 @@ docker-compose up -d
 FastAPI: http://localhost:8000/   
 FastAPI Docs: http://127.0.0.1:8000/docs   
 Adminer: http://localhost:8080/   
+Monitoring: http://localhost:8787/
