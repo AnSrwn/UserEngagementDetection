@@ -13,12 +13,15 @@ const settingsVisible = ref(false);
 let connectedUsers = ref();
 let visibleUsers = ref();
 
+let isCurrentDataEmpty = ref(true);
+let currentDataOutdated = ref(false);
 let currentAllData = ref();
 let currentEngagement = ref();
 let currentBoredom = ref();
 let currentConfusion = ref();
 let currentFrustration = ref();
 
+let timelineOutdated = ref(false)
 let timelineAllData = ref([]);
 let timelineEngagement = ref([]);
 let timelineBoredom = ref([]);
@@ -37,15 +40,23 @@ const getCurrentEngagement = async () => {
   });
 
   if (data.value !== null) {
-    currentAllData = data.value;
-
     connectedUsers.value = data.value.connections;
     visibleUsers.value = data.value.visible_users;
 
+    currentDataOutdated.value = connectedUsers.value > 0 && visibleUsers.value < 1 && data.value.engagement.high === 0 && data.value.engagement.middle === 0 && data.value.engagement.low === 0
+
+    if (currentDataOutdated.value) {
+      // do not change visualization if data is outdated
+      return
+    }
+
+    currentAllData = data.value;
     currentEngagement.value = data.value.engagement;
     currentBoredom.value = data.value.boredom;
     currentConfusion.value = data.value.confusion;
     currentFrustration.value = data.value.frustration;
+
+    isCurrentDataEmpty.value = currentEngagement.value.high === 0 && currentEngagement.value.middle === 0 && currentEngagement.value.low === 0;
   }
 }
 
@@ -65,7 +76,7 @@ const getTimelinePeriodEngagement = async () => {
     }
   });
 
-  setTimelineData(data);
+  setTimelineData(data.value);
 }
 
 const getTimelinePointEngagement = async () => {
@@ -80,29 +91,34 @@ const getTimelinePointEngagement = async () => {
     },
   });
 
+  timelineOutdated.value = data.value === null || data.value[0].from_datetime === null;
+
+  if (timelineOutdated.value) {
+    // do not change visualization if data is outdated
+    return
+  }
+
   // Remove expired data
   let earliestFromDatetime = new Date(((new Date()).getTime() - timelinePeriod.value * 60000));
-  let filtered = timelineAllData.value.filter((item) => item.from_datetime.getTime() > earliestFromDatetime.getTime())
+  let filtered = timelineAllData.value !== undefined && timelineAllData.value !== null ? (timelineAllData.value.filter((item) => item.from_datetime.getTime() < earliestFromDatetime.getTime())) : []
 
-  if (data.value !== null && data.value[0].from_datetime !== null) {
-    filtered = filtered.concat(data.value);
-  }
+  filtered = filtered.concat(data.value);
 
   setTimelineData(filtered);
 }
 
 function setTimelineData(data) {
-  timelineAllData.value = data.value;
-  timelineEngagement.value = data.value.map(item => {
+  timelineAllData.value = data;
+  timelineEngagement.value = data.map(item => {
     return {time: item.from_datetime, percentage: item.avg_engagement}
   });
-  timelineBoredom.value = data.value.map(item => {
+  timelineBoredom.value = data.map(item => {
     return {time: item.from_datetime, percentage: item.avg_boredom}
   });
-  timelineConfusion.value = data.value.map(item => {
+  timelineConfusion.value = data.map(item => {
     return {time: item.from_datetime, percentage: item.avg_confusion}
   });
-  timelineFrustration.value = data.value.map(item => {
+  timelineFrustration.value = data.map(item => {
     return {time: item.from_datetime, percentage: item.avg_frustration}
   });
 }
@@ -154,8 +170,9 @@ function onTimelinePeriodChange() {
         }}
       </el-button>
     </div>
+
     <client-only>
-      <el-drawer v-model="settingsVisible" :size="400" :show-close="false">
+      <el-drawer v-model="settingsVisible" :show-close="false" :size="400">
         <template #header="{ close, titleId, titleClass }">
           <h2>{{ $t('analysis.settings') }}</h2>
           <el-button type="danger" @click="close">
@@ -173,6 +190,7 @@ function onTimelinePeriodChange() {
             :min="3"
             @change="onCurrentIntervalSecondsChange"
         />
+        <el-divider/>
         <h3>{{ $t('settings.timeline-title') }}</h3>
         <h4>{{ $t('settings.timeline-refresh-interval-label') }}</h4>
         <el-input-number
@@ -189,96 +207,138 @@ function onTimelinePeriodChange() {
             @change="onTimelinePeriodChange"
         />
       </el-drawer>
+
       <div class="info-container">
         <el-card class="info-card">
           <div class="large-text">{{ connectedUsers }}</div>
           <div>{{ $t('analysis.info-connected-users') }}</div>
         </el-card>
         <el-card class="info-card">
-          <div class="large-text">{{ visibleUsers }}</div>
+          <div class="large-text">{{ connectedUsers > 0 ? visibleUsers : 0 }}</div>
           <div>{{ $t('analysis.info-visible-users') }}</div>
         </el-card>
       </div>
+
       <el-divider/>
-      <MoodWave v-if="visibleUsers > 0" :data="currentAllData"/>
-      <div class="charts-container">
-        <el-card class="engagement-card">
-          <template #header>
-            <h2>{{ $t('analysis.engagement') }}</h2>
-          </template>
-          <DonutChart v-if="visibleUsers > 0" :data="currentEngagement"/>
-          <div v-else>{{ $t('analysis.no-data') }}</div>
-          <el-collapse v-model="openCollapseViews" class="collapse-view">
-            <el-collapse-item name="timelineEngagement">
-              <template #title>
-                <h3>{{ $t('analysis.timeline-title') }}</h3>
+
+      <div v-if="connectedUsers > 0 && !isCurrentDataEmpty" class="visualization-container">
+
+        <el-badge :style="{visibility: currentDataOutdated ? 'visible' : 'hidden'}"
+                  :value="$t('analysis.old-data-badge')" class="old-data-badge"
+                  type="warning"/>
+        <MoodWave :data="currentAllData"/>
+
+        <div class="charts-container">
+
+          <el-card class="engagement-card">
+            <template #header>
+              <h2>{{ $t('analysis.engagement') }}</h2>
+            </template>
+            <el-badge :style="{visibility: currentDataOutdated ? 'visible' : 'hidden'}"
+                      :value="$t('analysis.old-data-badge')" class="old-data-badge"
+                      type="warning"/>
+            <DonutChart :data="currentEngagement"/>
+            <el-collapse v-model="openCollapseViews" class="collapse-view">
+              <el-collapse-item name="timelineEngagement">
+                <template #title>
+                  <h3>{{ $t('analysis.timeline-title') }}</h3>
+                </template>
+                <el-badge :style="{visibility: timelineOutdated ? 'visible' : 'hidden'}"
+                          :value="$t('analysis.old-data-badge')" class="old-data-badge"
+                          type="warning"/>
+                <LineChart v-if="timelineEngagement.length > 1" :data="timelineEngagement"/>
+                <div v-else class="timeline-no-data">{{ $t('analysis.timeline-no-data') }}</div>
+              </el-collapse-item>
+            </el-collapse>
+          </el-card>
+
+          <div class="bar-chart-container">
+            <el-card class="bar-card">
+              <template #header>
+                <h2>{{ $t('analysis.confusion') }}</h2>
               </template>
-              <LineChart v-if="timelineEngagement.length > 0" :data="timelineEngagement"/>
-            </el-collapse-item>
-          </el-collapse>
-        </el-card>
-        <div class="bar-chart-container">
-          <el-card class="bar-card">
-            <template #header>
-              <h2>{{ $t('analysis.confusion') }}</h2>
-            </template>
-            <BarChart
-                v-if="visibleUsers > 0"
-                :data="currentConfusion"
-                :tooltipText="$t('analysis.tooltip-confused')"
-                class="bar-chart"
-            />
-            <div v-else>{{ $t('analysis.no-data') }}</div>
-            <el-collapse v-model="openCollapseViews" class="collapse-view">
-              <el-collapse-item name="timelineConfusion">
-                <template #title>
-                  <h3>{{ $t('analysis.timeline-title') }}</h3>
-                </template>
-                <LineChart v-if="timelineConfusion.length > 0" :data="timelineConfusion"/>
-              </el-collapse-item>
-            </el-collapse>
-          </el-card>
-          <el-card class="bar-card">
-            <template #header>
-              <h2>{{ $t('analysis.boredom') }}</h2>
-            </template>
-            <BarChart
-                v-if="visibleUsers > 0"
-                :data="currentBoredom"
-                :tooltipText="$t('analysis.tooltip-bored')"
-                class="bar-chart"
-            />
-            <div v-else>{{ $t('analysis.no-data') }}</div>
-            <el-collapse v-model="openCollapseViews" class="collapse-view">
-              <el-collapse-item name="timelineBoredom">
-                <template #title>
-                  <h3>{{ $t('analysis.timeline-title') }}</h3>
-                </template>
-                <LineChart v-if="timelineBoredom.length > 0" :data="timelineBoredom"/>
-              </el-collapse-item>
-            </el-collapse>
-          </el-card>
-          <el-card class="bar-card">
-            <template #header>
-              <h2>{{ $t('analysis.frustration') }}</h2>
-            </template>
-            <BarChart
-                v-if="visibleUsers > 0"
-                :data="currentFrustration"
-                :tooltipText="$t('analysis.tooltip-frustrated')"
-                class="bar-chart"
-            />
-            <div v-else>{{ $t('analysis.no-data') }}</div>
-            <el-collapse v-model="openCollapseViews" class="collapse-view">
-              <el-collapse-item name="timelineFrustration">
-                <template #title>
-                  <h3>{{ $t('analysis.timeline-title') }}</h3>
-                </template>
-                <LineChart v-if="timelineFrustration.length > 0" :data="timelineFrustration"/>
-              </el-collapse-item>
-            </el-collapse>
-          </el-card>
+              <el-badge :style="{visibility: currentDataOutdated ? 'visible' : 'hidden'}"
+                        :value="$t('analysis.old-data-badge')" class="old-data-badge"
+                        type="warning"/>
+              <BarChart
+                  :data="currentConfusion"
+                  :tooltipText="$t('analysis.tooltip-confused')"
+                  class="bar-chart"
+              />
+              <el-collapse v-model="openCollapseViews" class="collapse-view">
+                <el-collapse-item name="timelineConfusion">
+                  <template #title>
+                    <h3>{{ $t('analysis.timeline-title') }}</h3>
+                  </template>
+                  <el-badge :style="{visibility: timelineOutdated ? 'visible' : 'hidden'}"
+                            :value="$t('analysis.old-data-badge')" class="old-data-badge"
+                            type="warning"/>
+                  <LineChart v-if="timelineConfusion.length > 1" :data="timelineConfusion"/>
+                  <div v-else class="timeline-no-data">{{ $t('analysis.timeline-no-data') }}</div>
+                </el-collapse-item>
+              </el-collapse>
+            </el-card>
+
+            <el-card class="bar-card">
+              <template #header>
+                <h2>{{ $t('analysis.boredom') }}</h2>
+              </template>
+              <el-badge :style="{visibility: currentDataOutdated ? 'visible' : 'hidden'}"
+                        :value="$t('analysis.old-data-badge')" class="old-data-badge"
+                        type="warning"/>
+              <BarChart
+                  :data="currentBoredom"
+                  :tooltipText="$t('analysis.tooltip-bored')"
+                  class="bar-chart"
+              />
+              <el-collapse v-model="openCollapseViews" class="collapse-view">
+                <el-collapse-item name="timelineBoredom">
+                  <template #title>
+                    <h3>{{ $t('analysis.timeline-title') }}</h3>
+                  </template>
+                  <el-badge :style="{visibility: timelineOutdated ? 'visible' : 'hidden'}"
+                            :value="$t('analysis.old-data-badge')" class="old-data-badge"
+                            type="warning"/>
+                  <LineChart v-if="timelineBoredom.length > 1" :data="timelineBoredom"/>
+                  <div v-else class="timeline-no-data">{{ $t('analysis.timeline-no-data') }}</div>
+                </el-collapse-item>
+              </el-collapse>
+            </el-card>
+
+            <el-card class="bar-card">
+              <template #header>
+                <h2>{{ $t('analysis.frustration') }}</h2>
+              </template>
+              <el-badge :style="{visibility: currentDataOutdated ? 'visible' : 'hidden'}"
+                        :value="$t('analysis.old-data-badge')" class="old-data-badge"
+                        type="warning"/>
+              <BarChart
+                  :data="currentFrustration"
+                  :tooltipText="$t('analysis.tooltip-frustrated')"
+                  class="bar-chart"
+              />
+              <el-collapse v-model="openCollapseViews" class="collapse-view">
+                <el-collapse-item name="timelineFrustration">
+                  <template #title>
+                    <h3>{{ $t('analysis.timeline-title') }}</h3>
+                  </template>
+                  <el-badge :style="{visibility: timelineOutdated ? 'visible' : 'hidden'}"
+                            :value="$t('analysis.old-data-badge')" class="old-data-badge"
+                            type="warning"/>
+                  <LineChart v-if="timelineFrustration.length > 1" :data="timelineFrustration"/>
+                  <div v-else class="timeline-no-data">{{ $t('analysis.timeline-no-data') }}</div>
+                </el-collapse-item>
+              </el-collapse>
+            </el-card>
+          </div>
+
         </div>
+      </div>
+      <div v-else-if="connectedUsers > 0 && isCurrentDataEmpty" class="loading-data-container">
+        <h2>{{ $t('analysis.connections-no-data') }}</h2>
+      </div>
+      <div v-else class="no-connections-container">
+        <h2>{{ $t('analysis.no-connections') }}</h2>
       </div>
     </client-only>
   </div>
@@ -308,6 +368,16 @@ function onTimelinePeriodChange() {
   }
 }
 
+.no-connections-container {
+  display: flex;
+  justify-content: center;
+}
+
+.loading-data-container {
+  display: flex;
+  justify-content: center;
+}
+
 .charts-container {
   display: flex;
   flex-wrap: wrap;
@@ -315,6 +385,18 @@ function onTimelinePeriodChange() {
   justify-content: space-between;
   height: 500px;
   gap: 30px 30px;
+}
+
+.timeline-no-data {
+  display: flex;
+  justify-content: center;
+}
+
+.old-data-badge {
+  height: 100%;
+  width: 100%;
+  padding-bottom: 6px;
+  text-align: end;
 }
 
 .collapse-view {

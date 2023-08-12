@@ -35,7 +35,11 @@
     "tooltip-confused": "verwirrt",
     "tooltip-bored": "gelangweilt",
     "tooltip-frustrated": "frustriert",
-    "timeline-title": "Zeitstrahl"
+    "timeline-title": "Zeitstrahl",
+    "no-connections": "Keine Nutzer verbunden",
+    "connections-no-data": "Warten auf Engagement Erkennung...",
+    "timeline-no-data": "Warten auf mehr Daten...",
+    "old-data-badge": "Veraltet"
   },
   "settings": {
     "timeline-title": "Zeitstrahl",

@@ -35,7 +35,11 @@
     "tooltip-confused": "Confused",
     "tooltip-bored": "Bored",
     "tooltip-frustrated": "Frustrated",
-    "timeline-title": "Timeline"
+    "timeline-title": "Timeline",
+    "no-connections": "No users connected",
+    "connections-no-data": "Waiting for Engagement Detection...",
+    "timeline-no-data": "Waiting for more data...",
+    "old-data-badge": "Outdated"
   },
   "settings": {
     "timeline-title": "Timeline",
