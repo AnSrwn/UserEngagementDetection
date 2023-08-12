@@ -167,6 +167,9 @@ with DatabaseService() as db_service:
         if len(simple_engagements) > 1:
             simple_engagements = [simple_engagements[0]]
 
+        if len(simple_engagements) < 1:
+            simple_engagements = [await get_simple_engagement({}, None, None)]
+
         return simple_engagements
 
 

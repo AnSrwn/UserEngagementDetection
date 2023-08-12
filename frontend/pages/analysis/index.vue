@@ -13,6 +13,8 @@ const settingsVisible = ref(false);
 let connectedUsers = ref(0);
 let visibleUsers = ref(0);
 
+let moodTimelineData = ref()
+
 let isCurrentDataEmpty = ref(true);
 let currentDataOutdated = ref(false);
 let currentAllData = ref();
@@ -30,7 +32,11 @@ let timelineFrustration = ref([]);
 
 let timelinePeriod = ref(30); // minutes
 
-const getCurrentEngagement = async () => {
+const getMoodTimelineEngagement = async () => {
+  moodTimelineData.value = (await getAveragePercentagePeriod(25, 5)).value;
+}
+
+const getCurrentPointEngagement = async () => {
   let params = () => {
     return {interval: currentIntervalSeconds.value}
   }
@@ -61,13 +67,13 @@ const getCurrentEngagement = async () => {
   }
 }
 
-const getTimelinePeriodEngagement = async () => {
+async function getAveragePercentagePeriod(period, interval) {
   let params = () => {
-    let earliestFromDatetime = new Date(((new Date()).getTime() - timelinePeriod.value * 60000));
+    let earliestFromDatetime = new Date(((new Date()).getTime() - period * 60000));
     let fromDatetime = earliestFromDatetime.toISOString();
     let toDatetime = (new Date()).toISOString();
 
-    return {from_datetime: fromDatetime, to_datetime: toDatetime, interval: timelineIntervalSeconds.value}
+    return {from_datetime: fromDatetime, to_datetime: toDatetime, interval: interval}
   }
 
   const {data} = await useApiFetch('engagement/average/percentage/period', {
@@ -76,7 +82,11 @@ const getTimelinePeriodEngagement = async () => {
       return data.map((item) => toTimelineEngagementClientItem(item));
     }
   });
+  return data;
+}
 
+const getTimelinePeriodEngagement = async () => {
+  const data = await getAveragePercentagePeriod(timelinePeriod.value, timelineIntervalSeconds.value);
   setTimelineData(data.value);
 }
 
@@ -126,29 +136,34 @@ function setTimelineData(data) {
 
 
 let currentInterval;
-let timelineInterval
+let timelineInterval;
+let moodTimelineInterval;
 
 onMounted(async () => {
-  await fetchOnMount(getCurrentEngagement);
+  await fetchOnMount(getCurrentPointEngagement);
   await fetchOnMount(getTimelinePeriodEngagement);
-  currentInterval = setInterval(getCurrentEngagement, currentIntervalSeconds.value * 1000);
+  await fetchOnMount(getMoodTimelineEngagement);
+  currentInterval = setInterval(getCurrentPointEngagement, currentIntervalSeconds.value * 1000);
   timelineInterval = setInterval(getTimelinePointEngagement, timelineIntervalSeconds.value * 1000);
+  moodTimelineInterval = setInterval(getMoodTimelineEngagement, 5 * 1000)
 })
 
 onDeactivated(() => {
   clearInterval(currentInterval);
   clearInterval(timelineInterval);
+  clearInterval(moodTimelineInterval);
 })
 
 onBeforeUnmount(() => {
   clearInterval(currentInterval);
   clearInterval(timelineInterval);
+  clearInterval(moodTimelineInterval);
 })
 
 function onCurrentIntervalSecondsChange() {
   clearInterval(currentInterval);
-  currentInterval = setInterval(getCurrentEngagement, currentIntervalSeconds.value * 1000);
-  getCurrentEngagement();
+  currentInterval = setInterval(getCurrentPointEngagement, currentIntervalSeconds.value * 1000);
+  getCurrentPointEngagement();
 }
 
 function onTimelineIntervalSecondsChange() {
@@ -224,12 +239,12 @@ function onTimelinePeriodChange() {
 
       <div v-if="connectedUsers > 0 && !isCurrentDataEmpty" class="visualization-container">
 
-        <MoodBoard :currentData="currentAllData"/>
+        <MoodBoard :currentData="currentAllData" :timeline-data="moodTimelineData"/>
 
         <el-badge :style="{visibility: currentDataOutdated ? 'visible' : 'hidden'}"
                   :value="$t('analysis.old-data-badge')" class="old-data-badge"
                   type="warning"/>
-        <MoodWave :data="currentAllData"/>
+        <MoodWave :data="currentAllData" :timelineData="moodTimelineData"/>
 
         <div class="charts-container">
 
