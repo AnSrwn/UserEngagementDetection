@@ -54,6 +54,12 @@ RUN pip install aiortc
 RUN pip install opencv-python-headless
 RUN pip install dlib
 
+# multiprocessing without memory leak
+RUN pip install dask
+RUN pip install "dask[distributed]"
+# dask dashboard
+RUN pip install bokeh
+
 # multiprocess extends multiprocessing to provide enhanced serialization, using dill
 RUN pip install dill
 RUN pip install msgpack-numpy
@@ -67,6 +73,7 @@ WORKDIR /app
 COPY . .
 
 EXPOSE ${PORT}
+EXPOSE 8787
 
 # CMD ["uvicorn", "main:app", "--proxy-headers", "--host", "127.0.0.1", "--port", "8000", "--root-path", "${ROOT_PATH}", "--forwarded-allow-ips", "${ALLOWED_IPS}"]
 # CMD uvicorn main:app --host ${HOST} --port ${PORT} --root-path ${ROOT_PATH} --forwarded-allow-ips ${ALLOWED_IPS} --proxy-headers

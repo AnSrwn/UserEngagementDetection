@@ -6,6 +6,7 @@ import uuid
 from aiortc import RTCPeerConnection, RTCSessionDescription
 from aiortc.contrib.media import MediaRelay
 from fastapi import APIRouter
+from dask.distributed import Client
 
 from common.prediction_frequency import PredictionFrequency
 from network.models.webrtc import OfferRequest
@@ -20,8 +21,9 @@ relay = MediaRelay()
 
 log.info(f"Number of cores: {multiprocessing.cpu_count()}")
 
-process_executor = concurrent.futures.ProcessPoolExecutor(mp_context=multiprocessing.get_context("spawn"))
-prediction_frequency = PredictionFrequency(process_executor)
+process_executor = Client()
+pending_futures = {}
+prediction_frequency = PredictionFrequency(process_executor, pending_futures)
 
 
 @router.post("/webrtc/offer", response_model=RTCSessionDescription)
@@ -54,7 +56,8 @@ async def offer(request: OfferRequest):
         if track.kind == "video":
             prediction_frequency.start_thread()
             # return same video
-            pc.addTrack(VideoTransformTrack(relay.subscribe(track), pc_id, process_executor, prediction_frequency))
+            pc.addTrack(VideoTransformTrack(relay.subscribe(track), pc_id, process_executor, pending_futures,
+                                            prediction_frequency))
 
         @track.on("ended")
         async def on_ended():

@@ -3,16 +3,13 @@ import logging
 from abc import ABC, abstractmethod
 from database.repositories.test.test_repository import TestRepositoryBase
 from database.database import create_sqlmodel_engine, sqlmodel_session_maker
-from database.repositories.engagement.engagement_repository import (
-    EngagementRepositoryBase,
-)
-from database.repositories.engagement.engagement_repository_impl import (
-    EngagementRepository,
-)
+from database.repositories.engagement.engagement_repository import (EngagementRepositoryBase, )
+from database.repositories.engagement.engagement_repository_impl import (EngagementRepository, )
 from database.repositories.test.test_repository_impl import TestRepository
 from sqlmodel import SQLModel
 
 log = logging.getLogger("uvicorn.debug")
+
 
 # How to use: https://github.com/manukanne/sqlmodel-repository-pattern/blob/main/main.py
 
@@ -56,6 +53,9 @@ class DatabaseService(DatabaseServiceBase):
 
     def commit(self):
         self._session.commit()
+
+    def close(self):
+        self._session.close()
 
     def rollback(self):
         self._session.rollback()

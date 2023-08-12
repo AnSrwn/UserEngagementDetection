@@ -2,6 +2,7 @@ import concurrent.futures
 import logging
 from enum import Enum
 from threading import Thread
+from dask.distributed import Client, Future
 
 from twisted.internet import task, reactor
 
@@ -16,16 +17,19 @@ class FrequencyStatus(Enum):
 class PredictionFrequency:
     status = FrequencyStatus.STOPPED
     executor = None
+    pending_futures = {}
     thread = None
     prediction_frequency_task = None
-    prediction_frequency_default = 20
-    # Defines how often predictions are made. Every x frames.
-    prediction_frequency = 20
+    prediction_frequency_default = 30
+    prediction_frequency = 30
     previous_process_count = 0
 
     def adjust_prediction_frequency(self):
         try:
-            process_count = len(self.executor._pending_work_items)
+            # for key, value in self.pending_futures.items():
+            #     log.info(key)
+
+            process_count = len(self.pending_futures.items())
 
             if (self.previous_process_count > 10) & (process_count > self.previous_process_count):
                 self.prediction_frequency += process_count
@@ -50,14 +54,16 @@ class PredictionFrequency:
     def create_thread(self):
         return Thread(target=self.run_prediction_frequency_loop)
 
-    def __init__(self, executor: concurrent.futures.ProcessPoolExecutor, ):
+    def __init__(self, executor: Client, pending_futures: dict):
         self.executor = executor
+        self.pending_futures = pending_futures
         self.thread = self.create_thread()
 
     def get_frequency(self):
         return self.prediction_frequency
 
     def start_thread(self):
+        log.info(f"Starting prediction_frequency...: FrequencyStatus: {self.status}")
         if self.status == FrequencyStatus.STOPPED:
             if self.thread is None:
                 self.thread = self.create_thread()
@@ -67,7 +73,10 @@ class PredictionFrequency:
 
             self.status = FrequencyStatus.RUNNING
 
+        log.info(f"Started prediction_frequency: FrequencyStatus: {self.status}")
+
     def stop_thread(self):
+        log.info(f"Stopping prediction_frequency...: FrequencyStatus: {self.status}")
         if self.status == FrequencyStatus.RUNNING:
             try:
                 self.prediction_frequency_task.stop()
@@ -79,3 +88,5 @@ class PredictionFrequency:
             # except Exception as e:
             #     log.error(f"Tried to stop a Reactor that was not running: {e}")
             self.status = FrequencyStatus.STOPPED
+
+        log.info(f"Stopped prediction_frequency: FrequencyStatus: {self.status}")

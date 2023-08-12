@@ -14,6 +14,12 @@ RUN pip install aiortc
 RUN pip install opencv-python-headless
 RUN pip install dlib
 
+# multiprocessing without memory leak
+RUN pip install dask
+RUN pip install "dask[distributed]"
+# dask dashboard
+RUN pip install bokeh
+
 # multiprocess extends multiprocessing to provide enhanced serialization, using dill
 RUN pip install dill
 RUN pip install msgpack-numpy

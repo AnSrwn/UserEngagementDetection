@@ -118,7 +118,7 @@ async function getStream() {
 function getVideoTrack(stream) {
   let constraints = {
     frameRate: {
-      ideal: 10.0
+      ideal: 30.0
     },
     facingMode: 'user', // use front camera on mobile devices
     width: {ideal: 1280},

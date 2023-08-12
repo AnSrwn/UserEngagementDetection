@@ -19,6 +19,7 @@ services:
       - .:/app
     ports:
       - 8000:8000
+      - 8787:8787
     networks:
       - backend-network
 
