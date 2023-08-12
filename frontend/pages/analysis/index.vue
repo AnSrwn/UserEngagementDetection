@@ -10,8 +10,8 @@ const timelineIntervalSeconds = ref(60);
 const openCollapseViews = ref([])
 const settingsVisible = ref(false);
 
-let connectedUsers = ref();
-let visibleUsers = ref();
+let connectedUsers = ref(0);
+let visibleUsers = ref(0);
 
 let isCurrentDataEmpty = ref(true);
 let currentDataOutdated = ref(false);
@@ -39,22 +39,23 @@ const getCurrentEngagement = async () => {
     query: params()
   });
 
-  if (data.value !== null) {
-    connectedUsers.value = data.value.connections;
-    visibleUsers.value = data.value.visible_users;
+  if (data.value[0]) {
+    let newValue = data.value[0];
+    connectedUsers.value = newValue.connections;
+    visibleUsers.value = newValue.visible_users;
 
-    currentDataOutdated.value = connectedUsers.value > 0 && visibleUsers.value < 1 && data.value.engagement.high === 0 && data.value.engagement.middle === 0 && data.value.engagement.low === 0
+    currentDataOutdated.value = connectedUsers.value > 0 && visibleUsers.value < 1 && newValue.engagement.high === 0 && newValue.engagement.middle === 0 && newValue.engagement.low === 0
 
     if (currentDataOutdated.value) {
       // do not change visualization if data is outdated
       return
     }
 
-    currentAllData.value = data.value;
-    currentEngagement.value = data.value.engagement;
-    currentBoredom.value = data.value.boredom;
-    currentConfusion.value = data.value.confusion;
-    currentFrustration.value = data.value.frustration;
+    currentAllData.value = newValue;
+    currentEngagement.value = newValue.engagement;
+    currentBoredom.value = newValue.boredom;
+    currentConfusion.value = newValue.confusion;
+    currentFrustration.value = newValue.frustration;
 
     isCurrentDataEmpty.value = currentEngagement.value.high === 0 && currentEngagement.value.middle === 0 && currentEngagement.value.low === 0;
   }

@@ -13,6 +13,8 @@ class EngagementDistribution(BaseModel):
 class EngagementSimple(BaseModel):
     connections: int = 0
     visible_users: int = 0
+    from_datetime: Optional[datetime]
+    to_datetime: Optional[datetime]
     boredom: EngagementDistribution = EngagementDistribution()
     engagement: EngagementDistribution = EngagementDistribution()
     confusion: EngagementDistribution = EngagementDistribution()

@@ -52,7 +52,8 @@
     "highly": "Sehr",
     "maybe": "Vielleicht",
     "lowly": "Wenig",
-    "positive-mood": "Positive Stimmung"
+    "positive-mood": "Positive Stimmung",
+    "tooltip-overall-mood": "Gesamtstimmung"
   },
   "privacy": {
     "title": "Datenschutzerklärung",

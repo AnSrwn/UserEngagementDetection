@@ -102,22 +102,72 @@ with DatabaseService() as db_service:
         return [engagement_interval_average]
 
 
-    @router.get("/engagement/average/simple", response_model=EngagementSimple)
+    @router.get("/engagement/average/simple/period", response_model=List[EngagementSimple])
+    async def list_engagement_average_simple_period(from_datetime: datetime = None, to_datetime: datetime = None,
+                                                    interval: int = 5):
+        """This endpoint is used to get the average engagement over a time period categorized in low,
+        middle and high."""
+        simple_engagements_per_intervals = []
+
+        if from_datetime is not None:
+            from_datetime = from_datetime.replace(microsecond=0)
+        if to_datetime is not None:
+            to_datetime = to_datetime.replace(microsecond=0)
+
+        raw_engagement = db_service.engagement.list_raw_by_datetime(
+            None if from_datetime is None else from_datetime.isoformat(),
+            None if to_datetime is None else to_datetime.isoformat())
+
+        engagement_per_intervals = await get_engagement_per_intervals(from_datetime, to_datetime, interval,
+                                                                      raw_engagement)
+
+        for value in engagement_per_intervals:
+            engagement_per_client: dict[str, List[Engagement]] = await get_engagement_per_client(value)
+            average_per_client: dict[str, dict[EngagementType, float]] = await get_average_per_client(
+                engagement_per_client)
+            simple_average_per_client: dict[str, dict[EngagementType, EngagementLevel]] = to_simple_averages_per_client(
+                average_per_client)
+            simple_engagement: EngagementSimple = await get_simple_engagement(simple_average_per_client, min(value,
+                                                                                                             key=lambda
+                                                                                                                 item: item.time).time,
+                                                                              max(value,
+                                                                                  key=lambda item: item.time).time)
+            simple_engagements_per_intervals.append(simple_engagement)
+
+        return simple_engagements_per_intervals
+
+
+    @router.get("/engagement/average/simple", response_model=List[EngagementSimple])
     async def get_engagement_average_simple(interval: int = 5):
         """This endpoint is used to get the average engagement of the last seconds (interval) categorized in low,
         middle and high."""
+        simple_engagements = []
+
         to_datetime = datetime.now()
         from_datetime = to_datetime - timedelta(seconds=interval)
 
         raw_engagement = db_service.engagement.list_raw_by_datetime(from_datetime.isoformat(), to_datetime.isoformat())
 
-        engagement_per_client: dict[str, List[Engagement]] = await get_engagement_per_client(raw_engagement)
-        average_per_client: dict[str, dict[EngagementType, float]] = await get_average_per_client(engagement_per_client)
-        simple_average_per_client: dict[str, dict[EngagementType, EngagementLevel]] = to_simple_averages_per_client(
-            average_per_client)
-        simple_engagement: EngagementSimple = await get_simple_engagement(simple_average_per_client)
+        engagement_per_intervals = await get_engagement_per_intervals(from_datetime, to_datetime, interval,
+                                                                      raw_engagement)
 
-        return simple_engagement
+        for value in engagement_per_intervals:
+            engagement_per_client: dict[str, List[Engagement]] = await get_engagement_per_client(value)
+            average_per_client: dict[str, dict[EngagementType, float]] = await get_average_per_client(
+                engagement_per_client)
+            simple_average_per_client: dict[str, dict[EngagementType, EngagementLevel]] = to_simple_averages_per_client(
+                average_per_client)
+            simple_engagement: EngagementSimple = await get_simple_engagement(simple_average_per_client, min(value,
+                                                                                                             key=lambda
+                                                                                                                 item: item.time).time,
+                                                                              max(value,
+                                                                                  key=lambda item: item.time).time)
+            simple_engagements.append(simple_engagement)
+
+        if len(simple_engagements) > 1:
+            simple_engagements = [simple_engagements[0]]
+
+        return simple_engagements
 
 
     @router.delete("/engagement/", response_model=int)
@@ -173,10 +223,12 @@ with DatabaseService() as db_service:
         return engagement_interval_average
 
 
-    async def get_simple_engagement(average_per_client):
+    async def get_simple_engagement(average_per_client, from_datetime, to_datetime):
         simple_engagement = EngagementSimple()
         simple_engagement.connections = len(peerConnections)
         simple_engagement.visible_users = len(average_per_client)
+        simple_engagement.from_datetime = from_datetime
+        simple_engagement.to_datetime = to_datetime
         for key, value in average_per_client.items():
             await add_engagement_level(simple_engagement, value, EngagementType.BOREDOM)
             await add_engagement_level(simple_engagement, value, EngagementType.ENGAGEMENT)

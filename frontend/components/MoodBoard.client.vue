@@ -80,18 +80,37 @@ function onChartDivMounted() {
         <div class="current-mood"></div>
       </template>
       <div class="tooltip-content">
-        <b>{{ $t('charts.positive-mood') }}:</b> {{ overallMoodPercentage }}%
+        <b>{{ $t('charts.tooltip-overall-mood') }}:</b> {{ overallMoodPercentage }}%
       </div>
     </el-popover>
-    <div class="mood-history"></div>
+    <div class="mood-history" >
+        <div class="mood-history-item" v-for="item in new Array(300)" />
+    </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .current-mood {
-  height: 100px;
-  width: 100px;
+  height: 60px;
+  width: 100%;
   border-radius: 8px;
   background-color: v-bind(overallMoodColor);
+  margin-bottom: 15px;
+}
+
+.mood-history {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-height: 85px;
+  width: 100%;
+}
+
+.mood-history-item {
+  height: 15px;
+  width: 15px;
+  border-radius: 4px;
+  background-color: lightgray;
 }
 </style>

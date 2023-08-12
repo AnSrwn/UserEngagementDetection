@@ -52,7 +52,8 @@
     "highly": "Highly",
     "maybe": "Maybe",
     "lowly": "Lowly",
-    "positive-mood": "Positive Mood"
+    "positive-mood": "Positive Mood",
+    "tooltip-overall-mood": "Overall Mood"
   },
   "privacy": {
     "title": "Privacy Policy",
