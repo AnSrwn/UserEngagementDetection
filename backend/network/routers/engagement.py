@@ -176,7 +176,7 @@ with DatabaseService() as db_service:
     @router.delete("/engagement/", response_model=int)
     async def delete_engagement():
         """This endpoint is used to delete all engagement data."""
-        return db_service.engagement.deleteAll()
+        return db_service.engagement.delete_all()
 
 
     async def get_engagement_per_intervals(from_datetime, to_datetime, interval, raw_engagement):

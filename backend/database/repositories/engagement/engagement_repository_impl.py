@@ -25,8 +25,14 @@ class EngagementRepository(GenericSqlRepository[Engagement], EngagementRepositor
         result.sort(key=lambda x: x.time)
         return result
 
-    def deleteAll(self) -> int:
+    def delete_all(self) -> int:
         statement = delete(self._model_cls)
+        result = self._session.exec(statement)
+        self._session.commit()
+        return result.rowcount
+
+    def delete_old_data(self, older_than: datetime) -> int:
+        statement = delete(self._model_cls).where(self._model_cls.time < older_than)
         result = self._session.exec(statement)
         self._session.commit()
         return result.rowcount

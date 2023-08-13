@@ -13,5 +13,9 @@ class EngagementRepositoryBase(GenericRepository[Engagement], ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def deleteAll(self) -> int:
+    def delete_all(self) -> int:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def delete_old_data(self, older_than: datetime) -> int:
         raise NotImplementedError()
