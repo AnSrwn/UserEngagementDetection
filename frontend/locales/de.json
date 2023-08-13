@@ -53,7 +53,8 @@
     "maybe": "Vielleicht",
     "lowly": "Wenig",
     "positive-mood": "Positive Stimmung",
-    "tooltip-overall-mood": "Gesamtstimmung"
+    "tooltip-overall-mood": "Gesamtstimmung",
+    "tooltip-overall-mood-timeline": "Jeder Block repräsentiert die Stimmung eines 5-Sekunden Zeitraums."
   },
   "privacy": {
     "title": "Datenschutzerklärung",

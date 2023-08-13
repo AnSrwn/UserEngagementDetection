@@ -137,7 +137,6 @@ function setTimelineData(data) {
 
 let currentInterval;
 let timelineInterval;
-let moodTimelineInterval;
 
 onMounted(async () => {
   await fetchOnMount(getCurrentPointEngagement);
@@ -145,19 +144,16 @@ onMounted(async () => {
   await fetchOnMount(getMoodTimelineEngagement);
   currentInterval = setInterval(getCurrentPointEngagement, currentIntervalSeconds.value * 1000);
   timelineInterval = setInterval(getTimelinePointEngagement, timelineIntervalSeconds.value * 1000);
-  moodTimelineInterval = setInterval(getMoodTimelineEngagement, 5 * 1000)
 })
 
 onDeactivated(() => {
   clearInterval(currentInterval);
   clearInterval(timelineInterval);
-  clearInterval(moodTimelineInterval);
 })
 
 onBeforeUnmount(() => {
   clearInterval(currentInterval);
   clearInterval(timelineInterval);
-  clearInterval(moodTimelineInterval);
 })
 
 function onCurrentIntervalSecondsChange() {
@@ -239,7 +235,11 @@ function onTimelinePeriodChange() {
 
       <div v-if="connectedUsers > 0 && !isCurrentDataEmpty" class="visualization-container">
 
-        <MoodBoard :currentData="currentAllData" :timeline-data="moodTimelineData"/>
+        <el-badge :style="{visibility: currentDataOutdated ? 'visible' : 'hidden'}"
+                  :value="$t('analysis.old-data-badge')" class="old-data-badge"
+                  type="warning"/>
+        <MoodBoard :currentData="currentAllData" :timeline-data="moodTimelineData"
+                   @timeline-changed="getMoodTimelineEngagement"/>
 
         <el-badge :style="{visibility: currentDataOutdated ? 'visible' : 'hidden'}"
                   :value="$t('analysis.old-data-badge')" class="old-data-badge"

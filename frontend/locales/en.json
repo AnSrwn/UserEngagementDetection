@@ -53,7 +53,8 @@
     "maybe": "Maybe",
     "lowly": "Lowly",
     "positive-mood": "Positive Mood",
-    "tooltip-overall-mood": "Overall Mood"
+    "tooltip-overall-mood": "Overall Mood",
+    "tooltip-overall-mood-timeline": "Every block represents the mood of a 5 seconds frame."
   },
   "privacy": {
     "title": "Privacy Policy",
