@@ -53,14 +53,14 @@ class VideoTransformTrack(MediaStreamTrack):
     async def recv(self):
         frame = await self.track.recv()
 
-        # Special serialization and deserialization to use the image in another process
-        image: matrix = frame.to_ndarray(format="bgr24")
-        serialized = msgpack.packb(image, default=msgpack_numpy.encode)
-
         self.frame_counter += 1
 
         if self.frame_counter >= self.prediction_frequency.get_frequency():
             self.frame_counter = 0
+
+            # Special serialization and deserialization to use the image in another process
+            image: matrix = frame.to_ndarray(format="bgr24")
+            serialized = msgpack.packb(image, default=msgpack_numpy.encode)
 
             try:
                 big_future = self.process_executor.scatter(serialized)

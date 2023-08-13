@@ -39,6 +39,13 @@ async def offer(request: OfferRequest):
     def log_info(msg, *args):
         log.info(pc_id + " " + msg, *args)
 
+    @pc.on("datachannel")
+    def on_datachannel(channel):
+        @channel.on("message")
+        def on_message(message):
+            if isinstance(message, str) and message.startswith("client_keep_alive"):
+                channel.send("server_keep_alive")
+
     @pc.on("connectionstatechange")
     async def on_connectionstatechange():
         log_info("Connection state is %s", pc.connectionState)

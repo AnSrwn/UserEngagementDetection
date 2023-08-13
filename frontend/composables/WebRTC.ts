@@ -7,6 +7,9 @@ export default class WebRTC {
     connectionState = ref();
     signalingState = ref();
 
+    dataChannel = undefined;
+    dataChannelInterval = undefined;
+
     // Template Refs
     videoElement = ref();
 
@@ -43,7 +46,10 @@ export default class WebRTC {
 
             // in case the connection stops unexpectedly
             if (this.connectionState.value === "disconnected") {
-                this.onDisconnected();
+                // TODO
+                // The goal of this code is to switch off the local video when the connection is disconnected.
+                // But sometimes the connections has some "hiccups": status is changed to disconnected, but it reconnects again...
+                // this.onDisconnected();
             }
         }, false);
 
@@ -57,6 +63,29 @@ export default class WebRTC {
         //         this.videoElement.value.srcObject = evt.streams[0];
         //     }
         // });
+
+        // dataChannel to keep connection alive
+        this.dataChannel = this.localPeerConnection.createDataChannel('chat', {
+            "ordered": true,
+            "maxPacketLifetime": 500
+        });
+
+        this.dataChannel.onclose = () => {
+            if (this.dataChannelInterval) clearInterval(this.dataChannelInterval);
+        };
+
+        this.dataChannel.onopen = () => {
+            this.dataChannelInterval = setInterval(() => {
+                const message = 'client_keep_alive';
+                if (this.dataChannel) this.dataChannel.send(message);
+            }, 1000);
+        };
+
+        this.dataChannel.onmessage = (evt) => {
+            if (evt.data === 'server_keep_alive') {
+                console.debug("WebRTC: connection alive.")
+            }
+        };
 
         return this.localPeerConnection;
     }
@@ -101,6 +130,7 @@ export default class WebRTC {
     stopConnection() {
         // close transceivers
         if (this.localPeerConnection === undefined) return;
+        if (this.dataChannel) this.dataChannel.close();
         if (this.localPeerConnection.getTransceivers) {
             this.localPeerConnection.getTransceivers().forEach((transceiver) => {
                 if (transceiver.stop) {
