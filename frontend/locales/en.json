@@ -10,10 +10,11 @@
   },
   "detection": {
     "title": "Detection",
-    "privacy-text-1": "Before using this application please read the ",
-    "privacy-text-2": "To continue, accept it by clicking on the checkbox.",
-    "privacy-text-link": "data privacy policy",
-    "privacy-checkbox-label": "I read and agree to the data privacy policy.",
+    "privacy-text-1": "This application uses a connected camera to determine engagement based on facial expressions.",
+    "privacy-text-2": "To use the application, please read the ",
+    "privacy-text-3": " and accept it.",
+    "privacy-text-link": "privacy policy",
+    "privacy-checkbox-label": "I have read the privacy policy and accept it.",
     "privacy-button": "Start Session",
     "connection-status": "Connection Status",
     "signaling-state": "Signaling State",
@@ -61,6 +62,13 @@
   },
   "privacy": {
     "title": "Privacy Policy",
-    "text": "Hello there"
+    "introduction": "Below we inform you in detail about the handling of your data.",
+    "hosting-title": "1. Hosting",
+    "hosting-text-1": "A third-party provider provides hosting services to operate this application. All data collected as described below, is processed on its servers.",
+    "hosting-text-2": "This service provider is located within a country of the European Union or the European Economic Area.",
+    "data-title": "2. Data Collection and Use",
+    "data-text-1": "By using the application, personal data is collected when the camera is switched on. Before collecting this data, you must actively agree to this process. From this video data, the engagement attributes engagement, boredom, confusion, and frustration are derived based on facial expressions. After this processing, the image is immediately deleted. The engagement data collected is anonymized and is only used for data visualization within this application. This data will also be completely deleted after 48 hours at the latest.",
+    "revocation-title": "3. Withdrawal of Consent",
+    "revocation-text-1": "According to Art. 7 GDPR, you have the right to revoke your consent at any time. To revoke your consent, you must exit the application completely. In order to use this application afterwards, you must agree to the processing of your personal data again."
   }
 }

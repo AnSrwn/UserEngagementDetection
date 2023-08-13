@@ -188,11 +188,12 @@ async function onCameraChange() {
     <!-- Step 1 -->
     <div v-if="step === 1" class="step-1-body">
       <el-card class="privacy-consent-card">
-        <div>{{ $t('detection.privacy-text-1') }}
-          <NuxtLink target="_blank" to="/privacy">{{ $t('detection.privacy-text-link') }}</NuxtLink>
-          .<br/>
+        <p>{{ $t('detection.privacy-text-1') }}
+          <br/><br/>
           {{ $t('detection.privacy-text-2') }}
-        </div>
+          <NuxtLink target="_blank" to="/privacy">{{ $t('detection.privacy-text-link') }}</NuxtLink>
+          {{ $t('detection.privacy-text-3') }}
+        </p>
         <el-checkbox v-model="privacyAgreed" :label="$t('detection.privacy-checkbox-label')" size="large"/>
         <br/>
         <el-button :disabled="privacyAgreed === false" class="privacy-agreed-start-button" type="primary"

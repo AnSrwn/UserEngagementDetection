@@ -30,6 +30,8 @@ const localePath = useLocalePath()
 .menu {
   display: flex;
   align-items: center;
+  border-radius: 8px;
+  background-color: ghostwhite;
 }
 
 //.flex-grow {

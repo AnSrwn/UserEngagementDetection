@@ -10,8 +10,9 @@
   },
   "detection": {
     "title": "Erkennung",
-    "privacy-text-1": "Bevor Nutzung der Anwendung, lesen Sie bitte die ",
-    "privacy-text-2": "Um fortzufahren, akzeptieren Sie die Datenschutzerklärung durch das Anklicken der Checkbox.",
+    "privacy-text-1": "Diese Anwendung verwendet eine angeschlossene Kamera, um das Engagement anhand des Gesichtsausdrucks zu bestimmen.",
+    "privacy-text-2": "Um die Anwendung zu nutzen, lesen Sie bitte die ",
+    "privacy-text-3": " und akzeptieren Sie diese.",
     "privacy-text-link": "Datenschutzerklärung",
     "privacy-checkbox-label": "Ich habe die Datenschutzerklärung gelesen und akzeptiere diese.",
     "privacy-button": "Session starten",
@@ -61,6 +62,13 @@
   },
   "privacy": {
     "title": "Datenschutzerklärung",
-    "text": "Test test"
+    "introduction": "Nachstehend informieren wir Sie ausführlich über den Umgang mit Ihren Daten.",
+    "hosting-title": "1. Hosting",
+    "hosting-text-1": "Für den Betrieb dieser Anwendung erbringt ein Drittanbieter die Dienste zum Hosting. Alle Daten, die wie folgend beschrieben, erhoben werden, werden auf seinen Servern verarbeitet.",
+    "hosting-text-2": "Dieser Dienstleister sitzt innerhalb eines Landes der Europäischen Union oder des Europäischen Wirtschaftsraums.",
+    "data-title": "2. Datenerhebung und -verwendung",
+    "data-text-1": "Durch die Nutzung der Anwendung werden bei eingeschalteter Kamera personenbezogene Daten erhoben. Vor Erhebung dieser Daten müssen Sie diesem Vorgang aktiv zustimmen. Aus diesen Videodaten werden anhand des Gesichtsausdrucks die Engagement-Attribute Engagement, Langeweile, Verwirrung und Frustration abgeleitet. Nach dieser Verarbeitung wird das Bild sofort gelöscht. Die erhobenen Engagement-Daten sind anonymisiert und werden nur zur Datenvisulisierung innerhalb dieser Anwendung genutzt. Nach spätestens 48 Stunden werden auch diese Daten vollständig gelöscht.",
+    "revocation-title": "3. Widerruf der Einwilligung",
+    "revocation-text-1": "Gemäß Art. 7 DSGVO haben Sie das Recht ihre Einwilligung jederzeit zu widerrufen. Für den Widerruf Ihrer Einwilligung müssen Sie die Anwendung vollständig beenden. Um diese Anwendung anschließend nochmals zu nutzten, müssen Sie der Verarbeitung Ihrer personenbezogenen Daten erneut zustimmen."
   }
 }
