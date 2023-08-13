@@ -42,6 +42,9 @@
     "old-data-badge": "Outdated"
   },
   "settings": {
+    "mood-title": "Mood Board",
+    "mood-wave": "Mood Wave",
+    "mood-timeline": "Mood Timeline",
     "timeline-title": "Timeline",
     "live-data-title": "Live Data",
     "live-data-refresh-interval-label": "Refresh Interval (in seconds):",

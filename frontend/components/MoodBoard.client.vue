@@ -15,7 +15,7 @@ let overallMoodColor = ref();
 
 let overallMoodTimelineData = ref([]);
 let overallMoodTimelineDataWithPlaceholders = ref([]);
-let maxTimelineItems = ref(350);
+let maxTimelineItems = ref(400);
 
 let moodHistoryElement = ref(null);
 

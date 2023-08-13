@@ -13,7 +13,8 @@ const settingsVisible = ref(false);
 let connectedUsers = ref(0);
 let visibleUsers = ref(0);
 
-let moodTimelineData = ref()
+let moodTimelineData = ref();
+let moodBoardsSetting = ref("timeline");
 
 let isCurrentDataEmpty = ref(true);
 let currentDataOutdated = ref(false);
@@ -194,6 +195,12 @@ function onTimelinePeriodChange() {
             {{ $t('general.close') }}
           </el-button>
         </template>
+        <h3>{{ $t('settings.mood-title') }}</h3>
+        <el-radio-group v-model="moodBoardsSetting">
+          <el-radio label="timeline" size="large">{{ $t('settings.mood-timeline') }}</el-radio>
+          <el-radio label="wave" size="large">{{ $t('settings.mood-wave') }}</el-radio>
+        </el-radio-group>
+        <el-divider/>
         <h3>{{ $t('settings.live-data-title') }}</h3>
         <h4>{{ $t('settings.live-data-refresh-interval-label') }}</h4>
         <el-input-number
@@ -235,16 +242,19 @@ function onTimelinePeriodChange() {
 
       <div v-if="connectedUsers > 0 && !isCurrentDataEmpty" class="visualization-container">
 
-        <el-badge :style="{visibility: currentDataOutdated ? 'visible' : 'hidden'}"
-                  :value="$t('analysis.old-data-badge')" class="old-data-badge"
-                  type="warning"/>
-        <MoodBoard :currentData="currentAllData" :timeline-data="moodTimelineData"
-                   @timeline-changed="getMoodTimelineEngagement"/>
-
-        <el-badge :style="{visibility: currentDataOutdated ? 'visible' : 'hidden'}"
-                  :value="$t('analysis.old-data-badge')" class="old-data-badge"
-                  type="warning"/>
-        <MoodWave :data="currentAllData" :timelineData="moodTimelineData"/>
+        <div v-if="moodBoardsSetting === 'timeline'" style="margin-bottom: 20px;">
+          <el-badge :style="{visibility: currentDataOutdated ? 'visible' : 'hidden'}"
+                    :value="$t('analysis.old-data-badge')" class="old-data-badge"
+                    type="warning"/>
+          <MoodBoard :currentData="currentAllData" :timeline-data="moodTimelineData"
+                     @timeline-changed="getMoodTimelineEngagement"/>
+        </div>
+        <div v-else-if="moodBoardsSetting === 'wave'">
+          <el-badge :style="{visibility: currentDataOutdated ? 'visible' : 'hidden'}"
+                    :value="$t('analysis.old-data-badge')" class="old-data-badge"
+                    type="warning"/>
+          <MoodWave :data="currentAllData" :timelineData="moodTimelineData"/>
+        </div>
 
         <div class="charts-container">
 

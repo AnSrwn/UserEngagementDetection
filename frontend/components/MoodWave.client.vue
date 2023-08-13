@@ -166,17 +166,17 @@ function onChartDivMounted() {
       </div>
       <div>
         <div
-          class="color-box"
-          :style="{ 'background-color': boredomColor }"
+            class="color-box"
+            :style="{ 'background-color': confusionColor }"
         ></div>
-        <b>{{ ($t('analysis.tooltip-bored')).charAt(0).toUpperCase() + ($t('analysis.tooltip-bored')).slice(1) }}:</b> {{ boredomPercentage }}%
+        <b>{{ ($t('analysis.tooltip-confused')).charAt(0).toUpperCase() + ($t('analysis.tooltip-confused')).slice(1) }}:</b> {{ confusionPercentage }}%
       </div>
       <div>
         <div
           class="color-box"
-          :style="{ 'background-color': confusionColor }"
+          :style="{ 'background-color': boredomColor }"
         ></div>
-        <b>{{ ($t('analysis.tooltip-confused')).charAt(0).toUpperCase() + ($t('analysis.tooltip-confused')).slice(1) }}:</b> {{ confusionPercentage }}%
+        <b>{{ ($t('analysis.tooltip-bored')).charAt(0).toUpperCase() + ($t('analysis.tooltip-bored')).slice(1) }}:</b> {{ boredomPercentage }}%
       </div>
       <div>
         <div
