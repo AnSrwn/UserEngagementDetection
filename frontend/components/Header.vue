@@ -9,18 +9,18 @@ const localePath = useLocalePath()
         class="menu"
         mode="horizontal"
     >
-      <el-menu-item index="1">
-        <NuxtLink :to="localePath('/')">{{$t('home.title')}}</NuxtLink>
+      <el-menu-item index="1" @click="navigateTo('/')">
+        {{ $t('home.title') }}
       </el-menu-item>
-      <el-menu-item index="2">
-        <NuxtLink :to="localePath('/detection')">{{$t('detection.title')}}</NuxtLink>
+      <el-menu-item index="2" @click="navigateTo('/detection')">
+        {{ $t('detection.title') }}
       </el-menu-item>
-      <el-menu-item index="3">
-        <NuxtLink :to="localePath('/analysis')">{{$t('analysis.title')}}</NuxtLink>
+      <el-menu-item index="3" @click="navigateTo('/analysis')">
+        {{ $t('analysis.title') }}
       </el-menu-item>
-<!--      <div class="flex-grow"/>-->
+      <!--      <div class="flex-grow"/>-->
       <el-menu-item index="4">
-        <LanguageSwitcher />
+        <LanguageSwitcher/>
       </el-menu-item>
     </el-menu>
   </header>

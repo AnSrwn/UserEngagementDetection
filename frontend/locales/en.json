@@ -6,7 +6,18 @@
     "user": "No one | {count} User | {count} Users"
   },
   "home": {
-    "title": "Home"
+    "title": "Home",
+    "introduction-header": "Learning success with engagement detection",
+    "introduction-text": "Recognize engagement in online training via video and adapt your teaching style.",
+    "demo-image-title": "Analysis View",
+    "card-participant-title": "For participants:",
+    "card-participant-text-1": "Are you taking part in online training and want to increase your learning success?",
+    "card-participant-text-2": "Support your teacher by analyzing your engagement.",
+    "card-participant-button": "Participate",
+    "card-instructor-title": "For teachers:",
+    "card-instructor-text-1": "You lead an online training and don't see your participants?",
+    "card-instructor-text-2": "Motivate them to use this application and analyze their engagement in real time.",
+    "card-instructor-button": "Analyze"
   },
   "detection": {
     "title": "Detection",
