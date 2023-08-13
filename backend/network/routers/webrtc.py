@@ -24,6 +24,7 @@ log.info(f"Number of cores: {multiprocessing.cpu_count()}")
 process_executor = Client()
 pending_futures = {}
 prediction_frequency = PredictionFrequency(process_executor, pending_futures)
+prediction_frequency.start_thread()
 
 
 @router.post("/webrtc/offer", response_model=RTCSessionDescription)
@@ -53,15 +54,15 @@ async def offer(request: OfferRequest):
             log_info("Connection state is %s", pc.connectionState)
             await pc.close()
             peerConnections.discard(pc)
-            if len(peerConnections) < 1:
-                prediction_frequency.stop_thread()
+            # if len(peerConnections) < 1:
+                # prediction_frequency.stop_thread()
 
     @pc.on("track")
     def on_track(track):
         log_info("Track %s received", track.kind)
 
         if track.kind == "video":
-            prediction_frequency.start_thread()
+            # prediction_frequency.start_thread()
             # return same video
             pc.addTrack(VideoTransformTrack(relay.subscribe(track), pc_id, process_executor, pending_futures,
                                             prediction_frequency))
@@ -69,8 +70,8 @@ async def offer(request: OfferRequest):
         @track.on("ended")
         async def on_ended():
             peerConnections.discard(pc)
-            if len(peerConnections) < 1:
-                prediction_frequency.stop_thread()
+            # if len(peerConnections) < 1:
+            #     prediction_frequency.stop_thread()
             log_info("Track %s ended", track.kind)
 
     # handle offer

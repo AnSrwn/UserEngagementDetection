@@ -1,4 +1,3 @@
-import concurrent.futures
 import logging
 from enum import Enum
 from threading import Thread
@@ -20,8 +19,8 @@ class PredictionFrequency:
     pending_futures = {}
     thread = None
     prediction_frequency_task = None
-    prediction_frequency_default = 30
-    prediction_frequency = 30
+    prediction_frequency_default = 1
+    prediction_frequency = 1
     previous_process_count = 0
 
     def adjust_prediction_frequency(self):
@@ -44,7 +43,8 @@ class PredictionFrequency:
 
     def run_prediction_frequency_loop(self):
         self.prediction_frequency_task = task.LoopingCall(self.adjust_prediction_frequency)
-        self.prediction_frequency_task.start(5.0)  # call every 5 seconds
+        d = self.prediction_frequency_task.start(5.0)  # call every 5 seconds
+        d.addErrback(lambda reason: log.error(f"adjust_prediction_frequency: {reason}"))
 
         try:
             reactor.run(installSignalHandlers=False)

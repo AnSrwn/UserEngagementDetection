@@ -138,6 +138,7 @@ async function start() {
     const trackForPredictions = getVideoTrack(stream, 10.0);
 
     // sending video stream to backend
+    webRtc.localPeerConnection.addTransceiver('video', {kind: 'sendonly', sendEncodings: [{maxFramerate: 1}]});
     sender = webRtc.localPeerConnection.addTrack(trackForPredictions, stream);
     // display video stream in frontend
     videoSrc.value = stream;
