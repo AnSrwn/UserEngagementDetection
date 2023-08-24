@@ -1,44 +1,36 @@
-import concurrent.futures
-import logging
 import multiprocessing
 import uuid
 
 from aiortc import RTCPeerConnection, RTCSessionDescription
-from aiortc.contrib.media import MediaRelay
 from fastapi import APIRouter
 from dask.distributed import Client
 
-from common.prediction_frequency import PredictionFrequency
+from common.log import Logger
+from network.peer_connections import PeerConnections
+from composables.prediction_frequency import PredictionFrequency
 from network.models.webrtc import OfferRequest
 from processing.engagement_detection import VideoTransformTrack
 
-log = logging.getLogger("uvicorn.debug")
-
 router = APIRouter()
 
-peerConnections = set()
-relay = MediaRelay()
+Logger.instance().info(f"Number of cores: {multiprocessing.cpu_count()}")
 
-log.info(f"Number of cores: {multiprocessing.cpu_count()}")
-
-process_executor = Client()
-pending_futures = {}
-prediction_frequency = PredictionFrequency(process_executor, pending_futures)
+dask_client = Client()
+prediction_frequency = PredictionFrequency(dask_client)
 prediction_frequency.start_thread()
 
 
 @router.post("/webrtc/offer", response_model=RTCSessionDescription)
 async def offer(request: OfferRequest):
     """This endpoint is used to establish a WebRTC connection."""
-    log.info(request)
+    Logger.instance().info(request)
     offer_session_description = RTCSessionDescription(sdp=request.sdp, type=request.type)
 
     pc = RTCPeerConnection()
     pc_id = f"pc_{uuid.uuid1()}"
-    peerConnections.add(pc)
 
-    def log_info(msg, *args):
-        log.info(pc_id + " " + msg, *args)
+    def log_info(msg):
+        Logger.instance().info(f"{pc_id}: {msg}")
 
     @pc.on("datachannel")
     def on_datachannel(channel):
@@ -49,39 +41,40 @@ async def offer(request: OfferRequest):
 
     @pc.on("connectionstatechange")
     async def on_connectionstatechange():
-        log_info("Connection state is %s", pc.connectionState)
+        log_info(f"Connection state is {pc.connectionState}")
         if pc.connectionState == "failed":
-            log_info("Connection state is %s", pc.connectionState)
+            log_info(f"Connection state is {pc.connectionState}")
             await pc.close()
-            peerConnections.discard(pc)
-            # if len(peerConnections) < 1:
-                # prediction_frequency.stop_thread()
+            PeerConnections.instance().discard(pc)  # if len(peerConnections) < 1:  # prediction_frequency.stop_thread()
 
     @pc.on("track")
     def on_track(track):
-        log_info("Track %s received", track.kind)
+        log_info(f"Track {track.kind} received")
 
         if track.kind == "video":
             # prediction_frequency.start_thread()
             # return same video
-            pc.addTrack(VideoTransformTrack(relay.subscribe(track), pc_id, process_executor, pending_futures,
-                                            prediction_frequency))
+            # relay = MediaRelay()
+            # relay.subscribe(track)
+            # TODO: addTrack kann wahrscheinlich weg gelassen werden
+            pc.addTrack(VideoTransformTrack(track, pc_id, dask_client, prediction_frequency))
 
         @track.on("ended")
         async def on_ended():
-            peerConnections.discard(pc)
+            PeerConnections.instance().discard(pc)
             # if len(peerConnections) < 1:
             #     prediction_frequency.stop_thread()
-            log_info("Track %s ended", track.kind)
+            log_info(f"Track {track.kind} ended")
 
     # handle offer
     await pc.setRemoteDescription(offer_session_description)
-    log.info("RemoteDescription: " + str(offer_session_description))
+    Logger.instance().info("RemoteDescription: " + str(offer_session_description))
 
     # send answer
     answer = await pc.createAnswer()
-    log.info("Answer: " + str(answer))
+    Logger.instance().info("Answer: " + str(answer))
     await pc.setLocalDescription(answer)
-    log.info("LocalDescription: " + str(pc.localDescription))
+    Logger.instance().info("LocalDescription: " + str(pc.localDescription))
 
+    PeerConnections.instance().add(pc)
     return pc.localDescription

@@ -94,6 +94,8 @@ export default class WebRTC {
         if (this.localPeerConnection === undefined) return;
 
         const localDescription = await this.localPeerConnection.createOffer();
+
+        //TODO eventuelle erst auf iceGaterhing warten bevor setLocalDescription
         await this.localPeerConnection.setLocalDescription(localDescription);
         console.debug("LocalDescription set");
 
@@ -148,6 +150,7 @@ export default class WebRTC {
         }, 500);
     }
 
+    // TODO nochmal mit Quelle vergleichen
     private async iceGatheringCompleted() {
         return new Promise<void>((resolve) => {
             if (this.localPeerConnection === undefined || this.localPeerConnection.iceGatheringState === "complete") {

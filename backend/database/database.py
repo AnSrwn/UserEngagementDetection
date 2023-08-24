@@ -1,11 +1,8 @@
-import logging
 from typing import Callable
 from sqlmodel import create_engine
 from config.config import settings
 from sqlmodel import Session
 from sqlmodel.pool import StaticPool
-
-log = logging.getLogger("uvicorn.debug")
 
 
 def create_sqlmodel_engine():

@@ -5,13 +5,11 @@ from typing import List
 
 from fastapi import APIRouter
 
+from network.peer_connections import PeerConnections
 from common.utils import partition
 from database.database_service import DatabaseService
 from database.models import Engagement
 from network.models.engagement import EngagementSimple, EngagementIntervalAverage
-from network.routers.webrtc import peerConnections
-
-log = logging.getLogger("uvicorn.debug")
 
 router = APIRouter()
 
@@ -41,7 +39,7 @@ def setEngagementLevel(avg: float) -> EngagementLevel:
 @router.get("/engagement/connections-count")
 async def count_connections():
     """This endpoint is used to retrieve the number of active webRTC connections."""
-    return len(peerConnections)
+    return PeerConnections.instance().length()
 
 
 @router.get("/engagement/raw/period", response_model=List[Engagement])
@@ -223,7 +221,7 @@ async def get_interval_average(average_per_client, from_datetime, to_datetime):
 
 async def get_simple_engagement(average_per_client, from_datetime, to_datetime):
     simple_engagement = EngagementSimple()
-    simple_engagement.connections = len(peerConnections)
+    simple_engagement.connections = PeerConnections.instance().length()
     simple_engagement.visible_users = len(average_per_client)
     simple_engagement.from_datetime = from_datetime
     simple_engagement.to_datetime = to_datetime

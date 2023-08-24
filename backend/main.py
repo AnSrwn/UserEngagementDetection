@@ -1,19 +1,17 @@
-import logging
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from common.database_cleaner import DatabaseCleaner
+from common.log import Logger
+from composables.database_cleaner import DatabaseCleaner
 from database.database_service import DatabaseService
 from network.routers import engagement
 from network.routers import test
 from network.routers import webrtc
 
-log = logging.getLogger("uvicorn.debug")
 database_cleaner: DatabaseCleaner = DatabaseCleaner()
 
 app = FastAPI(title="UserEngagementDetection")
-log.info("FastAPI started")
+Logger.instance().info("FastAPI started")
 
 # We define authorizations for middleware components
 app.add_middleware(

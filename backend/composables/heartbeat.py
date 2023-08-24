@@ -1,8 +1,7 @@
 import time
 import asyncio
-import logging
 
-log = logging.getLogger("uvicorn.debug")
+from common.log import Logger
 
 
 async def heartbeat():
@@ -11,4 +10,4 @@ async def heartbeat():
         start = time.time()
         await asyncio.sleep(1)
         delay = time.time() - start - 1
-        log.info(f"heartbeat delay = {delay:.3f}s")
+        Logger.instance().info(f"heartbeat delay = {delay:.3f}s")

@@ -1,7 +1,4 @@
-import concurrent.futures
 import logging
-import dask
-import multiprocessing
 from datetime import datetime
 from dask.distributed import Client
 
@@ -14,38 +11,37 @@ import numpy
 from aiortc import MediaStreamTrack
 from numpy import mat as matrix
 
-from common.prediction_frequency import PredictionFrequency
+from common.log import Logger
+from processing.futures_queue import FuturesQueue
+from composables.prediction_frequency import PredictionFrequency
 from database.database_service import DatabaseService
 from database.models import Engagement
 
-log = logging.getLogger("uvicorn.debug")
-
-engagementModel = keras.models.load_model("processing/models/parallel_model.h5", compile=False)
-log.info("Engagement Model loaded")
+engagement_model = keras.models.load_model("processing/models/parallel_model.h5", compile=False)
+Logger.instance().info("Engagement Model loaded")
 
 
 class VideoTransformTrack(MediaStreamTrack):
     kind = "video"
     pc_id: str = None
     frame_counter = 0
-    process_executor = None
-    pending_futures = {}
+    dask_client = None
+    futures_queue = None
     prediction_frequency = None
 
-    def __init__(self, track, pc_id: str, process_executor: Client, pending_futures: dict,
-                 prediction_frequency: PredictionFrequency):
+    def __init__(self, track, pc_id: str, dask_client: Client, prediction_frequency: PredictionFrequency):
         super().__init__()
         self.track = track
         self.pc_id = pc_id
-        self.process_executor = process_executor
-        self.pending_futures = pending_futures
+        self.dask_client = dask_client
+        self.futures_queue = FuturesQueue.instance()
         self.prediction_frequency = prediction_frequency
 
     def future_callback(self, fn):
         try:
             fn.release()
-            self.pending_futures.pop(fn.key)
-            self.process_executor.cancel(fn, force=True)
+            self.futures_queue.remove(fn.key)
+            self.dask_client.cancel(fn, force=True)
             del fn
         except Exception as e:
             return f"future_callback: {e}"
@@ -63,19 +59,19 @@ class VideoTransformTrack(MediaStreamTrack):
             serialized = msgpack.packb(image, default=msgpack_numpy.encode)
 
             try:
-                big_future = self.process_executor.scatter(serialized)
-                future = self.process_executor.submit(detect_engagement, big_future, self.pc_id)
+                big_future = self.dask_client.scatter(serialized)
+                future = self.dask_client.submit(detect_engagement, big_future, self.pc_id)
                 future.add_done_callback(self.future_callback)
-                self.pending_futures[future.key] = future
+                self.futures_queue.add(future.key, future)
 
                 # del image  # del serialized
             except Exception as e:
-                log.error(f"recv: {e}")
-                log.info("Shutdown ProcessPoolExecutor...")
-                self.process_executor.cancel()
-                log.info("Restart ProcessPoolExecutor...")
-                self.process_executor.restart()
-                log.info("ProcessPoolExecutor restarted.")
+                Logger.instance().error(f"recv: {e}")
+                Logger.instance().info("Shutdown Dask Client...")
+                self.dask_client.cancel()
+                Logger.instance().info("Restart Dask Client...")
+                self.dask_client.restart()
+                Logger.instance().info("Dask Client restarted.")
 
         return frame
 
@@ -87,7 +83,7 @@ def detect_engagement(serialized, pc_id: str):
     try:
         frame_time = datetime.now().isoformat()
         image = msgpack.unpackb(serialized, object_hook=msgpack_numpy.decode)
-        del serialized
+        # del serialized
         detector = dlib.get_frontal_face_detector()
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         faces = detector(gray)
@@ -99,20 +95,20 @@ def detect_engagement(serialized, pc_id: str):
             x2 = face.right()
             y2 = face.bottom()
 
-            # if no face detected, skip predictions
+            # if no face detected, skip predictionsF
             if (len(image[y1:y2, x1:x2]) <= 0 or len(image[y1 - 100: y2 + 100, x1 - 100: x2 + 100]) <= 0):
-                del image
+                # del image
                 return "No face detected"
 
             # resize image to face dimensions and convert to gray image
             roi.append(cv2.resize(cv2.cvtColor(image[y1:y2, x1:x2], cv2.COLOR_BGR2GRAY), (48, 48)))
-            del image
+            # del image
 
             # get predictions
             if len(roi) > 0:
                 # add dimension, because model expects multiple images
                 images = numpy.expand_dims(roi, axis=3)
-                predictions = engagementModel.predict(images)
+                predictions = engagement_model.predict(images)
                 roi = []
 
                 # retrieve predictions
@@ -132,15 +128,15 @@ def detect_engagement(serialized, pc_id: str):
                 return (f"{pc_id}: Boredom: {boredom} | Engagement: {engagement} | Confusion: {confusion} | "
                         f"Frustration: {frustration}")
             else:
-                del image
+                # del image
                 return "No face detected"
 
     except UnboundLocalError as e:
-        del image
+        # del image
         process_logger.exception(f"No predictions: {e}")
         return f"No predictions: {e}"
     except Exception as e:
-        del image
+        # del image
         process_logger.exception(f"detectEngagement: {e}")
         return f"detectEngagement: {e}"
 
