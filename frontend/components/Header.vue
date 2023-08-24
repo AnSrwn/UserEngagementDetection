@@ -1,5 +1,5 @@
 <script setup>
-const {locale, locales, setLocale} = useI18n()
+const {locales} = useI18n()
 const localePath = useLocalePath()
 </script>
 
@@ -9,16 +9,21 @@ const localePath = useLocalePath()
         class="menu"
         mode="horizontal"
     >
-      <el-menu-item index="1" @click="navigateTo('/')">
-        {{ $t('home.title') }}
-      </el-menu-item>
-      <el-menu-item index="2" @click="navigateTo('/detection')">
-        {{ $t('detection.title') }}
-      </el-menu-item>
-      <el-menu-item index="3" @click="navigateTo('/analysis')">
-        {{ $t('analysis.title') }}
-      </el-menu-item>
-      <!--      <div class="flex-grow"/>-->
+      <NuxtLink :to="localePath('/')">
+        <el-menu-item index="1">
+          {{ $t('home.title') }}
+        </el-menu-item>
+      </NuxtLink>
+      <NuxtLink :to="localePath('/detection')">
+        <el-menu-item index="2">
+          {{ $t('detection.title') }}
+        </el-menu-item>
+      </NuxtLink>
+      <NuxtLink :to="localePath('/analysis')">
+        <el-menu-item index="3">
+          {{ $t('analysis.title') }}
+        </el-menu-item>
+      </NuxtLink>
       <el-menu-item index="4">
         <LanguageSwitcher/>
       </el-menu-item>
@@ -33,8 +38,4 @@ const localePath = useLocalePath()
   border-radius: 8px;
   background-color: ghostwhite;
 }
-
-//.flex-grow {
-//  flex-grow: 1;
-//}
 </style>

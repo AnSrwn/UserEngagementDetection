@@ -4,43 +4,48 @@ import {PieChart, VideoCamera} from '@element-plus/icons-vue'
 
 const appConfig = useAppConfig()
 const runtimeConfig = useRuntimeConfig()
+const localePath = useLocalePath()
 </script>
 
 <template>
   <div class="introduction-container">
     <div class="introduction-text-content">
       <div class="introduction-text-inner-content">
-        <h1>{{$t('home.introduction-header')}}</h1>
-        <p>{{$t('home.introduction-text')}}</p>
+        <h1>{{ $t('home.introduction-header') }}</h1>
+        <p>{{ $t('home.introduction-text') }}</p>
       </div>
     </div>
     <div class="image-container">
       <img :alt="$t('home.demo-image-title')" class="demo-image" src="/images/demo_analysis.png"/>
-      <p style="color: gray;"><i>{{$t('home.demo-image-title')}}</i></p>
+      <p style="color: gray;"><i>{{ $t('home.demo-image-title') }}</i></p>
     </div>
   </div>
   <el-divider/>
   <div class="cards-container">
     <el-card class="card-participant">
-      <h2>{{$t('home.card-participant-title')}}</h2>
+      <h2>{{ $t('home.card-participant-title') }}</h2>
       <div class="card-participant-content">
         <el-icon :size="100">
           <VideoCamera/>
         </el-icon>
-        <p class="home-cards-text">{{$t('home.card-participant-text-1')}}</p>
-        <p class="home-cards-text">{{$t('home.card-participant-text-2')}}</p>
-        <el-button class="home-button" type="primary" @click="navigateTo('/detection')">{{$t('home.card-participant-button')}}</el-button>
+        <p class="home-cards-text">{{ $t('home.card-participant-text-1') }}</p>
+        <p class="home-cards-text">{{ $t('home.card-participant-text-2') }}</p>
+        <NuxtLink :to="localePath('/detection')">
+          <el-button class="home-button" type="primary">{{ $t('home.card-participant-button') }}</el-button>
+        </NuxtLink>
       </div>
     </el-card>
     <el-card class="card-instructor">
-      <h2>{{$t('home.card-instructor-title')}}</h2>
+      <h2>{{ $t('home.card-instructor-title') }}</h2>
       <div class="card-instructor-content">
         <el-icon :size="100">
           <PieChart/>
         </el-icon>
-        <p class="home-cards-text">{{$t('home.card-instructor-text-1')}}</p>
-        <p class="home-cards-text">{{$t('home.card-instructor-text-2')}}</p>
-        <el-button class="home-button" type="primary" @click="navigateTo('/analysis')">{{$t('home.card-instructor-button')}}</el-button>
+        <p class="home-cards-text">{{ $t('home.card-instructor-text-1') }}</p>
+        <p class="home-cards-text">{{ $t('home.card-instructor-text-2') }}</p>
+        <NuxtLink :to="localePath('/analysis')">
+          <el-button class="home-button" type="primary">{{ $t('home.card-instructor-button') }}</el-button>
+        </NuxtLink>
       </div>
     </el-card>
   </div>
