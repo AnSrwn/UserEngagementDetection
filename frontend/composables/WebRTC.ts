@@ -5,7 +5,9 @@ export default class WebRTC {
     localPeerConnection: RTCPeerConnection | undefined;
 
     connectionState = ref();
+    private internalConnectionState = ref();
     signalingState = ref();
+    isRestarting = ref(false);
 
     dataChannel = undefined;
     dataChannelInterval = undefined;
@@ -42,27 +44,32 @@ export default class WebRTC {
         this.localPeerConnection = new RTCPeerConnection(config);
 
         this.localPeerConnection.addEventListener("iceconnectionstatechange", () => {
-            this.connectionState.value = this.localPeerConnection?.iceConnectionState;
+            this.internalConnectionState.value = this.localPeerConnection?.iceConnectionState;
+            console.debug(`internalConnectionState: ${this.internalConnectionState.value}`);
 
             // in case the connection stops unexpectedly
-            if (this.connectionState.value === "disconnected") {
-                // TODO
-                // The goal of this code is to switch off the local video when the connection is disconnected.
-                // But sometimes the connections has some "hiccups": status is changed to disconnected, but it reconnects again...
-                // this.onDisconnected();
+            if (this.internalConnectionState.value === "disconnected") {
+                this.isRestarting.value = true;
+                setTimeout(() => {
+                    if (this.internalConnectionState.value === "disconnected" && this.isRestarting.value) {
+                        console.debug("WebRTC: Connection disconnected -> Reconnecting...");
+                        this.onDisconnected();
+                    } else {
+                        this.isRestarting.value = false;
+                    }
+                }, 10 * 1000);
+
+                return;
+            }
+
+            if (!this.isRestarting.value) {
+                this.connectionState.value = this.internalConnectionState.value;
             }
         }, false);
 
         this.localPeerConnection.addEventListener("signalingstatechange", () => {
             this.signalingState.value = this.localPeerConnection?.signalingState;
         }, false);
-
-        // connect video
-        // this.localPeerConnection.addEventListener("track", (evt) => {
-        //     if (evt.track.kind === "video") { // @ts-ignore
-        //         this.videoElement.value.srcObject = evt.streams[0];
-        //     }
-        // });
 
         // dataChannel to keep connection alive
         this.dataChannel = this.localPeerConnection.createDataChannel('chat', {
@@ -77,7 +84,11 @@ export default class WebRTC {
         this.dataChannel.onopen = () => {
             this.dataChannelInterval = setInterval(() => {
                 const message = 'client_keep_alive';
-                if (this.dataChannel) this.dataChannel.send(message);
+                try {
+                    if (this.dataChannel) this.dataChannel.send(message);
+                } catch (e) {
+                    console.error("WebRTC: Cannot send message. DataChannel already closed.", e)
+                }
             }, 1000);
         };
 
@@ -95,7 +106,6 @@ export default class WebRTC {
 
         const localDescription = await this.localPeerConnection.createOffer();
 
-        //TODO eventuelle erst auf iceGaterhing warten bevor setLocalDescription
         await this.localPeerConnection.setLocalDescription(localDescription);
         console.debug("LocalDescription set");
 
@@ -127,30 +137,34 @@ export default class WebRTC {
         // @ts-ignore
         await this.localPeerConnection.setRemoteDescription(responseValue);
         console.debug(this.localPeerConnection)
+        this.isRestarting.value = false;
     }
 
     stopConnection() {
-        // close transceivers
-        if (this.localPeerConnection === undefined) return;
-        if (this.dataChannel) this.dataChannel.close();
-        if (this.localPeerConnection.getTransceivers) {
-            this.localPeerConnection.getTransceivers().forEach((transceiver) => {
-                if (transceiver.stop) {
-                    if (this.localPeerConnection === undefined) return;
-                    transceiver.stop();
-                }
-            });
-        }
-
-        // close peer connection
-        setTimeout(() => {
+        try {
+            // close transceivers
             if (this.localPeerConnection === undefined) return;
-            this.localPeerConnection.close();
-            this.connectionState.value = "disconnected"
-        }, 500);
+            if (this.dataChannelInterval) clearInterval(this.dataChannelInterval);
+            if (this.dataChannel) this.dataChannel.close();
+            if (this.localPeerConnection.getTransceivers) {
+                this.localPeerConnection.getTransceivers().forEach((transceiver) => {
+                    if (transceiver.stop) {
+                        if (this.localPeerConnection === undefined) return;
+                        transceiver.stop();
+                    }
+                });
+            }
+
+            // close peer connection
+            setTimeout(() => {
+                if (this.localPeerConnection === undefined) return;
+                this.localPeerConnection.close();
+            }, 500);
+        } catch (e) {
+            console.error("WebRTC: Failed to stop connection", e);
+        }
     }
 
-    // TODO nochmal mit Quelle vergleichen
     private async iceGatheringCompleted() {
         return new Promise<void>((resolve) => {
             if (this.localPeerConnection === undefined || this.localPeerConnection.iceGatheringState === "complete") {

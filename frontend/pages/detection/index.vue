@@ -10,7 +10,7 @@ let step = ref(1);
 let connectedUsers = ref(0);
 
 let sender = null;
-let stream = null;
+let globalStream = null;
 
 let videoSrc = ref(null);
 let selectedCamera = ref(null);
@@ -25,7 +25,7 @@ let cameraSelection = ref(null);
 let statusIndicator = ref(null);
 
 let webRtc = new WebRTC(videoContainer, connectionState, signalingState, () => {
-  stop();
+  restart();
 });
 
 const {data, refresh} = await useApiFetch(`engagement/connections-count`, {
@@ -70,7 +70,9 @@ watch(selectedCamera, async (newValue, oldValue) => {
 });
 
 watch(connectionState, (newValue, oldValue) => {
-  if (newValue === "checking") {
+  if (webRtc.isRestarting.value) {
+    statusIndicator.value.style.backgroundColor = "green";
+  } else if (newValue === "checking") {
     statusIndicator.value.style.backgroundColor = "yellow";
   } else if (newValue === "connected") {
     statusIndicator.value.style.backgroundColor = "green";
@@ -106,13 +108,12 @@ async function getStream() {
 
   let newStream = await navigator.mediaDevices.getUserMedia(constraints);
 
-  if (stream !== null) {
-    stream.getTracks().forEach(function (track) {
+  if (globalStream !== null) {
+    globalStream.getTracks().forEach(function (track) {
       track.stop();
     });
   }
-  stream = newStream;
-  return stream;
+  return newStream;
 }
 
 function getVideoTrack(stream) {
@@ -134,51 +135,73 @@ async function start() {
   webRtc.createPeerConnection();
 
   try {
-    stream = await getStream();
-    const trackForPredictions = getVideoTrack(stream, 10.0);
+    if (globalStream === null) {
+      globalStream = await getStream();
+    }
+    const trackForPredictions = getVideoTrack(globalStream, 10.0);
 
     // sending video stream to backend
     webRtc.localPeerConnection.addTransceiver('video', {kind: 'sendonly', sendEncodings: [{maxFramerate: 1}]});
-    sender = webRtc.localPeerConnection.addTrack(trackForPredictions, stream);
+    sender = webRtc.localPeerConnection.addTrack(trackForPredictions, globalStream);
     // display video stream in frontend
-    videoSrc.value = stream;
+    if (videoSrc.value === null) {
+      videoSrc.value = globalStream;
+    }
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
       console.error("enumerateDevices() not supported.");
     } else {
-      cameraList.value = await getAllCameras();
-      selectedCamera.value = getActiveCamera(stream);
+      if (!webRtc.isRestarting.value) {
+        cameraList.value = await getAllCameras();
+        selectedCamera.value = getActiveCamera(globalStream);
+      }
     }
 
     await webRtc.negotiate();
-  } catch (error) {
-    console.error("Error opening video camera.", error);
+  } catch (e) {
+    console.error("Error opening video camera.", e);
   }
 }
 
 function stop() {
-  if (stream !== null) {
-    stream.getTracks().forEach(function (track) {
+  console.debug("DetectionIndex: Stopping Connection ...");
+  webRtc.isRestarting.value = false;
+  if (globalStream !== null) {
+    globalStream.getTracks().forEach(function (track) {
       track.stop();
     });
+    globalStream = null;
+    videoSrc.value = null;
   }
 
   if (videoContainer.value) {
     videoContainer.value.srcObject = null;
   }
 
-  webRtc.stopConnection()
+  webRtc.stopConnection();
+  webRtc.connectionState.value = "disconnected"
+  console.debug("DetectionIndex: Connection stopped");
+}
+
+function restart() {
+  webRtc.isRestarting.value = true;
+  webRtc.stopConnection();
+  console.debug("DetectionIndex: Connection stopped");
+
+  setTimeout(() => {
+    start();
+  }, 600);
 }
 
 async function onCameraChange() {
-  stream = await getStream()
-  const trackForPredictions = getVideoTrack(stream);
+  globalStream = await getStream();
+  const trackForPredictions = getVideoTrack(globalStream);
   if (webRtc.localPeerConnection.iceConnectionState !== "closed") {
     await sender.replaceTrack(trackForPredictions);
   }
 
   // display video stream in frontend
-  videoSrc.value = stream;
+  videoSrc.value = globalStream;
 }
 </script>
 
@@ -231,11 +254,11 @@ async function onCameraChange() {
 
       <br/>
 
-      <el-button v-if="connectionState !== 'connected'" type="primary" @click="start()">
-        {{ $t('detection.session-restart-button') }}
-      </el-button>
-      <el-button v-if="connectionState === 'connected'" type="primary" @click="stop()">
+      <el-button v-if="connectionState === 'connected' || connectionState === 'checking' || webRtc.isRestarting.value" type="primary" @click="stop()">
         {{ $t('detection.session-stop-button') }}
+      </el-button>
+      <el-button v-else type="primary" @click="start()">
+        {{ $t('detection.session-restart-button') }}
       </el-button>
     </div>
   </div>
