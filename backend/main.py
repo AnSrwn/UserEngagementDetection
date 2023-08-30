@@ -5,7 +5,6 @@ from common.log import Logger
 from composables.database_cleaner import DatabaseCleaner
 from database.database_service import DatabaseService
 from network.routers import engagement
-from network.routers import test
 from network.routers import webrtc
 
 database_cleaner: DatabaseCleaner = DatabaseCleaner()
@@ -40,7 +39,6 @@ def shutdown_event():
     database_cleaner.stop_thread()
 
 
-app.include_router(test.router)
 app.include_router(webrtc.router)
 app.include_router(engagement.router)
 

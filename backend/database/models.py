@@ -24,14 +24,6 @@ class BaseModel(SQLModel):
         arbitrary_types_allowed = True
 
 
-#  TODO: remove test
-class Test(BaseModel, table=True):
-    """Test table."""
-
-    name: str
-    is_super: bool
-
-
 class Engagement(BaseModel, table=True):
     """Engagement table."""
 
