@@ -28,7 +28,10 @@ class PredictionFrequency:
             process_count = self.futures_queue.length()
 
             if (self.previous_process_count > 10) & (process_count > self.previous_process_count):
-                self.prediction_frequency += process_count
+                self.prediction_frequency += 1
+
+            if (self.previous_process_count > 10) & (process_count < self.previous_process_count):
+                self.prediction_frequency -= 1
 
             if (self.previous_process_count < 10) & (process_count < 10):
                 self.prediction_frequency = self.prediction_frequency_default
