@@ -38,7 +38,7 @@ class PredictionFrequency:
 
             self.previous_process_count = process_count
             Logger.instance().info(
-                f"Processes in queue: {process_count} | Prediction Frequency: {self.prediction_frequency}")
+                f"Processes in queue: {process_count} | Prediction Frequency: {self.prediction_frequency} frame/s")
         except Exception as e:
             Logger.instance().error(f"adjust_prediction_frequency: {e}")
 

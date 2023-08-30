@@ -1,11 +1,9 @@
 from abc import ABC, abstractmethod
 
 from common.log import Logger
-from database.repositories.test.test_repository import TestRepositoryBase
 from database.database import create_sqlmodel_engine, sqlmodel_session_maker
 from database.repositories.engagement.engagement_repository import (EngagementRepositoryBase, )
 from database.repositories.engagement.engagement_repository_impl import (EngagementRepository, )
-from database.repositories.test.test_repository_impl import TestRepository
 from sqlmodel import SQLModel
 
 
@@ -14,7 +12,6 @@ from sqlmodel import SQLModel
 
 class DatabaseServiceBase(ABC):
     engagement: EngagementRepositoryBase
-    test: TestRepositoryBase
 
     _engine = None
 
@@ -42,7 +39,6 @@ class DatabaseService(DatabaseServiceBase):
     def __enter__(self):
         self._session = self._session_factory()
         self.engagement = EngagementRepository(self._session)
-        self.test = TestRepository(self._session)
         return super().__enter__()
 
     def create_db_and_tables(self):
