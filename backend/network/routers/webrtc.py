@@ -77,6 +77,7 @@ async def offer(request: OfferRequest):
 
 @router.post("/webrtc/close")
 async def close(pc_id: str):
+    """This endpoint is used to close and delete a WebRTC connection."""
     pc = PeerConnections.instance().get(pc_id)
     await pc.close()
     PeerConnections.instance().remove(pc_id)
