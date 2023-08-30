@@ -1,21 +1,21 @@
+import {useApiFetch} from "~/composables/useApiFetch";
+
 export default class WebRTC {
     runtimeConfig;
     stunServerUrl;
 
     localPeerConnection: RTCPeerConnection | undefined;
+    peerConnectionId: string | undefined;
 
     connectionState = ref();
-    private internalConnectionState = ref();
     signalingState = ref();
     isRestarting = ref(false);
-
     dataChannel = undefined;
     dataChannelInterval = undefined;
-
     // Template Refs
     videoElement = ref();
-
     onDisconnected: () => void;
+    private internalConnectionState = ref();
 
     constructor(videoElement: globalThis.Ref<any>, connectionState: globalThis.Ref<any>, signalingState: globalThis.Ref<any>, onDisconnected: () => void) {
         this.runtimeConfig = useRuntimeConfig();
@@ -73,8 +73,7 @@ export default class WebRTC {
 
         // dataChannel to keep connection alive
         this.dataChannel = this.localPeerConnection.createDataChannel('chat', {
-            "ordered": true,
-            "maxPacketLifetime": 500
+            "ordered": true, "maxPacketLifetime": 500
         });
 
         this.dataChannel.onclose = () => {
@@ -129,7 +128,8 @@ export default class WebRTC {
             alert(error.value);
         }
 
-        let responseValue = response.value;
+        let responseValue = response.value.description;
+        this.peerConnectionId = response.value.pc_id;
 
         console.debug("Received Answer:");
         console.debug(responseValue);
@@ -140,7 +140,7 @@ export default class WebRTC {
         this.isRestarting.value = false;
     }
 
-    stopConnection() {
+    async stopConnection() {
         try {
             // close transceivers
             if (this.localPeerConnection === undefined) return;
@@ -155,11 +155,15 @@ export default class WebRTC {
                 });
             }
 
+            await useApiFetch("webrtc/close", {
+                method: "POST", query: {pc_id: this.peerConnectionId}
+            });
+
             // close peer connection
-            setTimeout(() => {
+            await new Promise(resolve => setTimeout(resolve, 500)).then(() => {
                 if (this.localPeerConnection === undefined) return;
                 this.localPeerConnection.close();
-            }, 500);
+            })
         } catch (e) {
             console.error("WebRTC: Failed to stop connection", e);
         }

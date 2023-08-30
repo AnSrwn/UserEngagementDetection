@@ -163,7 +163,7 @@ async function start() {
   }
 }
 
-function stop() {
+async function stop() {
   console.debug("DetectionIndex: Stopping Connection ...");
   webRtc.isRestarting.value = false;
   if (globalStream !== null) {
@@ -178,19 +178,16 @@ function stop() {
     videoContainer.value.srcObject = null;
   }
 
-  webRtc.stopConnection();
+  await webRtc.stopConnection();
   webRtc.connectionState.value = "disconnected"
   console.debug("DetectionIndex: Connection stopped");
 }
 
-function restart() {
+async function restart() {
   webRtc.isRestarting.value = true;
-  webRtc.stopConnection();
+  await webRtc.stopConnection();
   console.debug("DetectionIndex: Connection stopped");
-
-  setTimeout(() => {
-    start();
-  }, 600);
+  await start();
 }
 
 async function onCameraChange() {

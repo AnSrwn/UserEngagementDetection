@@ -8,7 +8,7 @@ from dask.distributed import Client
 from common.log import Logger
 from network.peer_connections import PeerConnections
 from composables.prediction_frequency import PredictionFrequency
-from network.models.webrtc import OfferRequest
+from network.models.webrtc import OfferRequest, PeerConnectionDescription
 from processing.engagement_detection import VideoTransformTrack
 
 router = APIRouter()
@@ -20,7 +20,7 @@ prediction_frequency = PredictionFrequency(dask_client)
 prediction_frequency.start_thread()
 
 
-@router.post("/webrtc/offer", response_model=RTCSessionDescription)
+@router.post("/webrtc/offer", response_model=PeerConnectionDescription)
 async def offer(request: OfferRequest):
     """This endpoint is used to establish a WebRTC connection."""
     Logger.instance().info(request)
@@ -45,26 +45,21 @@ async def offer(request: OfferRequest):
         if pc.connectionState == "failed":
             log_info(f"Connection state is {pc.connectionState}")
             await pc.close()
-            PeerConnections.instance().discard(pc)  # if len(peerConnections) < 1:  # prediction_frequency.stop_thread()
+            PeerConnections.instance().remove(pc_id)
+            Logger.instance().info(f"pc {pc_id} closed")
 
     @pc.on("track")
     def on_track(track):
         log_info(f"Track {track.kind} received")
 
         if track.kind == "video":
-            # prediction_frequency.start_thread()
-            # return same video
-            # relay = MediaRelay()
-            # relay.subscribe(track)
-            # TODO: addTrack kann wahrscheinlich weg gelassen werden
             pc.addTrack(VideoTransformTrack(track, pc_id, dask_client, prediction_frequency))
 
         @track.on("ended")
         async def on_ended():
-            PeerConnections.instance().discard(pc)
-            # if len(peerConnections) < 1:
-            #     prediction_frequency.stop_thread()
+            PeerConnections.instance().remove(pc_id)
             log_info(f"Track {track.kind} ended")
+            Logger.instance().info(f"pc {pc_id} closed")
 
     # handle offer
     await pc.setRemoteDescription(offer_session_description)
@@ -76,5 +71,13 @@ async def offer(request: OfferRequest):
     await pc.setLocalDescription(answer)
     Logger.instance().info("LocalDescription: " + str(pc.localDescription))
 
-    PeerConnections.instance().add(pc)
-    return pc.localDescription
+    PeerConnections.instance().add(pc_id, pc)
+    return PeerConnectionDescription(description=pc.localDescription, pc_id=pc_id)
+
+
+@router.post("/webrtc/close")
+async def close(pc_id: str):
+    pc = PeerConnections.instance().get(pc_id)
+    await pc.close()
+    PeerConnections.instance().remove(pc_id)
+    Logger.instance().info(f"pc {pc_id} closed")

@@ -1,3 +1,4 @@
+from common.log import Logger
 from common.singleton import Singleton
 
 
@@ -6,13 +7,19 @@ class PeerConnections:
     connections = None
 
     def __init__(self):
-        self.connections = set()
+        self.connections = {}
 
-    def add(self, connection):
-        self.connections.add(connection)
+    def add(self, pc_id, connection):
+        self.connections[pc_id] = connection
 
-    def discard(self, connection):
-        self.connections.discard(connection)
+    def get(self, pc_id):
+        return self.connections[pc_id]
+
+    def remove(self, pc_id):
+        try:
+            self.connections.pop(pc_id)
+        except Exception as e:
+            Logger.instance().info(f"peer_connections remove {pc_id}: {e}")
 
     def length(self) -> int:
-        return len(self.connections)
+        return len(self.connections.items())
