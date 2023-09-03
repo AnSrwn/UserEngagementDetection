@@ -22,15 +22,7 @@ ARG ROOT_PATH_ARG='/api/v1'
 ARG ALLOWED_IPS_ARG='*'
 ARG HOST_ARG='0.0.0.0'
 ARG PORT_ARG=8000
-# ARG POSTGRES_DB_HOST_ARG='database:5432'
-# ARG POSTGRES_DB_ARG='db_1'
-# ARG POSTGRES_USER_ARG='db_user'
-# ARG POSTGRES_PASSWORD_ARG='db_password'
 
-# ENV POSTGRES_DB_HOST=${POSTGRES_DB_HOST_ARG}
-# ENV POSTGRES_DB=${POSTGRES_DB_ARG}
-# ENV POSTGRES_USER=${POSTGRES_USER_ARG}
-# ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD_ARG}
 ENV ROOT_PATH=${ROOT_PATH_ARG}
 ENV HOST=${HOST_ARG}
 ENV PORT=${PORT_ARG}
@@ -49,15 +41,12 @@ RUN pip install sqlmodel
 RUN pip install aiortc
 
 # KI
-# RUN apt-get update && apt-get install libgl1
-# RUN pip install opencv-python
 RUN pip install opencv-python-headless
 RUN pip install dlib
 
 # multiprocessing without memory leak
 RUN pip install dask
 RUN pip install "dask[distributed]"
-# dask dashboard
 RUN pip install bokeh
 
 # multiprocess extends multiprocessing to provide enhanced serialization, using dill
@@ -75,6 +64,4 @@ COPY . .
 EXPOSE ${PORT}
 EXPOSE 8787
 
-# CMD ["uvicorn", "main:app", "--proxy-headers", "--host", "127.0.0.1", "--port", "8000", "--root-path", "${ROOT_PATH}", "--forwarded-allow-ips", "${ALLOWED_IPS}"]
-# CMD uvicorn main:app --host ${HOST} --port ${PORT} --root-path ${ROOT_PATH} --forwarded-allow-ips ${ALLOWED_IPS} --proxy-headers
 CMD uvicorn main:app --host ${HOST} --port ${PORT} --root-path ${ROOT_PATH} --proxy-headers
